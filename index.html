@@ -494,6 +494,96 @@ button:focus-visible {
   border-color: var(--accent);
 }
 
+.rate-scale-hint {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-faint);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.rate-scale-hint strong {
+  color: var(--accent);
+  font-weight: 600;
+  font-style: normal;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 13px;
+}
+
+.rate-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 14px 18px;
+  border: 1px solid var(--rule);
+  background: var(--paper);
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.rate-text {
+  flex: 1 1 280px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--ink);
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.rate-text .option-letter {
+  margin-top: 4px;
+}
+
+.rate-chips {
+  display: flex;
+  gap: 4px;
+  flex: 0 0 auto;
+}
+
+.rate-chip {
+  background: var(--bg);
+  border: 1px solid var(--rule);
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ink-soft);
+  transition: all 0.15s;
+}
+
+.rate-chip:hover {
+  border-color: var(--ink);
+  background: var(--paper-warm);
+  color: var(--ink);
+}
+
+.rate-chip.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.mode-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  text-transform: uppercase;
+  margin-left: 6px;
+}
+
+@media (max-width: 580px) {
+  .rate-row { flex-direction: column; align-items: stretch; }
+  .rate-chips { width: 100%; justify-content: space-between; }
+  .rate-chip { flex: 1; min-width: 0; }
+}
+
 .back-link {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
@@ -839,7 +929,7 @@ const TYPE_ORDER = {
   men: Object.keys(TYPES.men)
 };
 
-const VERSION = 'v2.5';
+const VERSION = 'v2.6';
 
 /* ============================================================
    PRONOUN RESOLUTION
@@ -1380,13 +1470,20 @@ const Q_MEN = [
 /* ============================================================
    STATE
    ============================================================ */
+const SCORING_MODE = (() => {
+  try {
+    return new URLSearchParams(window.location.search).get('mode') === 'rate' ? 'rate' : 'forced';
+  } catch (e) { return 'forced'; }
+})();
+
 const state = {
   view: 'home',
-  mode: 'self',        // 'self' or 'proxy'
+  mode: 'self',         // 'self' or 'proxy'
+  scoringMode: SCORING_MODE,  // 'forced' (default) or 'rate'
   quiz: null,
   qIndex: 0,
-  answers: [],         // each: { optIdx, weights, confidence: 1|2|3 }
-  pending: null        // { optIdx, confidence } — current unconfirmed selection
+  answers: [],          // forced: { optIdx, weights, confidence }; rate: { ratings: { type: 0-3 } }; either: { neutral: true }
+  pending: null         // forced: { optIdx, confidence } | { optIdx: 4, neutral: true }; rate: { ratings: { type: 0-3 } }
 };
 
 const CONFIDENCE_LABELS = { 1: 'Loosely', 2: 'Mostly', 3: 'Exactly' };
@@ -1414,7 +1511,7 @@ function renderHome() {
     <div class="masthead">
       <span>A Field Guide</span>
       <span class="center">Four mothers, four fathers</span>
-      <span>${VERSION}</span>
+      <span>${VERSION}${state.scoringMode === 'rate' ? '<span class="mode-tag">rate</span>' : ''}</span>
     </div>
     <div class="kicker">After Lawson</div>
     <h1>Four kinds of <em>difficult</em> mother.<br>Four kinds of <em>husband</em> who marry them.</h1>
@@ -1483,6 +1580,11 @@ function getQuestions() {
 }
 
 function renderQuiz() {
+  if (state.scoringMode === 'rate') return renderQuizRate();
+  return renderQuizForced();
+}
+
+function renderQuizForced() {
   const questions = getQuestions();
   const total = questions.length;
   const i = state.qIndex;
@@ -1541,8 +1643,68 @@ function renderQuiz() {
   `;
 }
 
+function renderQuizRate() {
+  const questions = getQuestions();
+  const total = questions.length;
+  const i = state.qIndex;
+  const q = questions[i];
+  const pct = (i / total) * 100;
+  const letters = ['A', 'B', 'C', 'D'];
+  const instrumentName = state.quiz === 'women' ? 'The Four Mothers' : 'The Four Fathers';
+  const modeTag = state.mode === 'self' ? 'About me' : 'About someone in my life';
+  const pending = state.pending || { ratings: {} };
+  const ratings = pending.ratings || {};
+
+  const rows = q.opts.map((o, idx) => {
+    const type = Object.keys(o.w)[0];
+    const current = ratings[type];
+    return `
+      <div class="rate-row">
+        <div class="rate-text">
+          <span class="option-letter">${letters[idx]}.</span>
+          <span>${resolvePronouns(o.t, state.mode)}</span>
+        </div>
+        <div class="rate-chips" role="radiogroup" aria-label="Rating for option ${letters[idx]}">
+          ${[0, 1, 2, 3].map(v => `
+            <button class="rate-chip ${current === v ? 'active' : ''}"
+                    role="radio"
+                    aria-checked="${current === v}"
+                    aria-label="${v} of 3"
+                    onclick="setRating('${type}', ${v})">${v}</button>
+          `).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  $app.innerHTML = `
+    <div class="masthead">
+      <span>${instrumentName}<span class="mode-tag">rate</span></span>
+      <span class="center">${modeTag}</span>
+      <span>${String(i+1).padStart(2,'0')} / ${total}</span>
+    </div>
+    <div class="progress-row">
+      <span>Item ${String(i+1).padStart(2,'0')}</span>
+      <span class="right">${i+1} of ${total}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+
+    <div class="q-number">Q.${String(i+1).padStart(2,'0')}</div>
+    <h2 class="question-text">${resolvePronouns(q.q, state.mode)}</h2>
+    <div class="rate-scale-hint">
+      Rate each: <strong>0</strong> not at all &middot; <strong>1</strong> a little &middot; <strong>2</strong> mostly &middot; <strong>3</strong> exactly
+    </div>
+    ${rows}
+    <button class="next-btn" onclick="confirmAnswer()">Next →</button>
+    <button class="back-link" onclick="goBack()">${i === 0 ? '← Back to menu' : '← Previous item'}</button>
+  `;
+}
+
 function pendingFromAnswer(a) {
   if (!a) return null;
+  if (state.scoringMode === 'rate') {
+    return { ratings: a.ratings ? Object.assign({}, a.ratings) : {} };
+  }
   if (a.neutral) return { optIdx: NEUTRAL_OPT_IDX, neutral: true };
   return { optIdx: a.optIdx, confidence: a.confidence };
 }
@@ -1564,18 +1726,30 @@ window.setConfidence = function(level) {
   render(false);
 };
 
+window.setRating = function(typeKey, value) {
+  if (!state.pending) state.pending = { ratings: {} };
+  if (!state.pending.ratings) state.pending.ratings = {};
+  state.pending.ratings[typeKey] = value;
+  render(false);
+};
+
 window.confirmAnswer = function() {
-  if (!state.pending) return;
-  const p = state.pending;
-  if (p.neutral) {
-    state.answers[state.qIndex] = { neutral: true };
+  if (state.scoringMode === 'rate') {
+    const p = state.pending || { ratings: {} };
+    state.answers[state.qIndex] = { ratings: Object.assign({}, p.ratings || {}) };
   } else {
-    const q = getQuestions()[state.qIndex];
-    state.answers[state.qIndex] = {
-      optIdx: p.optIdx,
-      weights: q.opts[p.optIdx].w,
-      confidence: p.confidence
-    };
+    if (!state.pending) return;
+    const p = state.pending;
+    if (p.neutral) {
+      state.answers[state.qIndex] = { neutral: true };
+    } else {
+      const q = getQuestions()[state.qIndex];
+      state.answers[state.qIndex] = {
+        optIdx: p.optIdx,
+        weights: q.opts[p.optIdx].w,
+        confidence: p.confidence
+      };
+    }
   }
   state.qIndex++;
   if (state.qIndex >= getQuestions().length) {
@@ -1603,24 +1777,33 @@ window.goBack = function() {
 };
 
 /* ---------- SCORING ----------
-   Each typed option weights exactly one type, multiplied by confidence
-   (Loosely=1, Mostly=2, Exactly=3). Neutral answers ("none of these")
-   contribute nothing to any type and are tracked separately. Reporting
-   as share-of-total of typed answers makes the headline number reflect
-   relative dominance among the patterns the respondent actually saw
-   themselves in. The neutral count is reported alongside. */
+   Forced mode: each typed option weights one type at base 3, multiplied
+   by confidence (Loosely=1, Mostly=2, Exactly=3); neutral answers
+   contribute nothing.
+   Rate mode: every option carries an independent 0-3 rating; each type's
+   total is rating × 3 summed across all questions.
+   Both modes report share-of-total so the radar reads the same. */
 function computeScores() {
   const keys = TYPE_ORDER[state.quiz];
-
   const earned = {};
   keys.forEach(k => earned[k] = 0);
-  state.answers.forEach(a => {
-    if (!a || a.neutral) return;
-    const mult = a.confidence || 2;
-    Object.keys(a.weights).forEach(k => {
-      earned[k] = (earned[k] || 0) + a.weights[k] * mult;
+
+  if (state.scoringMode === 'rate') {
+    state.answers.forEach(a => {
+      if (!a || !a.ratings) return;
+      keys.forEach(k => {
+        earned[k] += (a.ratings[k] || 0) * 3;
+      });
     });
-  });
+  } else {
+    state.answers.forEach(a => {
+      if (!a || a.neutral) return;
+      const mult = a.confidence || 2;
+      Object.keys(a.weights).forEach(k => {
+        earned[k] += a.weights[k] * mult;
+      });
+    });
+  }
 
   const total = keys.reduce((s, k) => s + earned[k], 0) || 1;
   const pct = {};
@@ -1634,7 +1817,32 @@ function countNeutrals() {
   return state.answers.filter(a => a && a.neutral).length;
 }
 
+/* Rate mode has no discrete "neutral" — recognition is encoded in the
+   ratings themselves. Intensity = mean rating across all rated options;
+   below 0.6 (i.e. mostly 0s with a few 1s) means the respondent didn't
+   see themselves anywhere. */
+function rateIntensity() {
+  let total = 0, count = 0;
+  state.answers.forEach(a => {
+    if (!a || !a.ratings) return;
+    Object.values(a.ratings).forEach(v => {
+      total += v;
+      count += 1;
+    });
+  });
+  return count ? total / count : 0;
+}
+
 function classifyResult(neutralCount, totalAnswered) {
+  if (state.scoringMode === 'rate') {
+    const intensity = rateIntensity();
+    if (intensity < 0.6) return 'no-match';
+    const scores = computeScores();
+    const sorted = Object.values(scores).sort((a, b) => b - a);
+    const spread = sorted[0] - sorted[1];
+    if (sorted[0] < 35 || spread < 5) return 'tentative';
+    return 'clear';
+  }
   const pct = totalAnswered ? neutralCount / totalAnswered : 0;
   if (pct >= 0.45) return 'no-match';
   if (pct >= 0.25) return 'tentative';
@@ -1753,6 +1961,14 @@ function renderResults() {
 
   const instrumentName = state.quiz === 'women' ? 'The Four Mothers' : 'The Four Fathers';
 
+  const isRate = state.scoringMode === 'rate';
+  const noMatchSub = isRate
+    ? `Average rating across all options was ${rateIntensity().toFixed(2)} of 3`
+    : `${neutralCount} of ${totalAnswered} items did not align with any pattern`;
+  const matchSub = isRate
+    ? 'Match share <span class="big">' + winnerPct + '%</span> &middot; of all rating points'
+    : 'Match score <span class="big">' + winnerPct + '%</span> &middot; of items that aligned with any pattern';
+
   const headline = (() => {
     if (resultMode === 'no-match') {
       const title = state.mode === 'self'
@@ -1762,7 +1978,7 @@ function renderResults() {
         <div class="results-headline no-match">
           <div class="results-kicker">No strong match</div>
           <h1 class="results-title">${resolvePronouns(title, state.mode)}</h1>
-          <div class="results-pct">${neutralCount} of ${totalAnswered} items did not align with any pattern</div>
+          <div class="results-pct">${noMatchSub}</div>
         </div>
       `;
     }
@@ -1773,7 +1989,7 @@ function renderResults() {
       <div class="results-headline">
         <div class="results-kicker">${kicker}</div>
         <h1 class="results-title">The ${formatName(winner.name)}</h1>
-        <div class="results-pct">Match score <span class="big">${winnerPct}%</span> &middot; of items that aligned with any pattern</div>
+        <div class="results-pct">${matchSub}</div>
       </div>
     `;
   })();
@@ -1796,7 +2012,7 @@ function renderResults() {
     </div>
   `;
 
-  const neutralNote = (resultMode !== 'no-match' && neutralCount > 0) ? `
+  const neutralNote = (!isRate && resultMode !== 'no-match' && neutralCount > 0) ? `
     <p class="neutral-note">${neutralCount} of ${totalAnswered} items did not align with any of the four patterns.</p>
   ` : '';
 
