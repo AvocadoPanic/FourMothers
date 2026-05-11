@@ -793,7 +793,7 @@ const TYPE_ORDER = {
   men: Object.keys(TYPES.men)
 };
 
-const VERSION = 'v2.2';
+const VERSION = 'v2.3';
 
 /* ============================================================
    PRONOUN RESOLUTION
@@ -1560,18 +1560,29 @@ function computeScores() {
   return pct;
 }
 
-/* ---------- CHART (4-axis radar) ---------- */
+/* ---------- CHART (4-axis radar with portraits) ---------- */
 function renderChart(scores) {
   const keys = TYPE_ORDER[state.quiz];
   const types = TYPES[state.quiz];
   const n = keys.length;
-  const W = 520, H = 500;
+  const W = 620, H = 620;
   const cx = W / 2;
   const cy = H / 2;
   const R = 150;
+  const IMG_R = 30;
+  const IMG_DIST = R + 90;   // image center distance from chart center
+  const LBL_OFFSET = IMG_R + 22;  // label sits below image
 
   const summary = keys.map(k => `${types[k].name} ${scores[k]}%`).join(', ');
   let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Score distribution across four types: ${summary}"><title>Score distribution</title>`;
+
+  // Defs: circular clip + sepia tint so colour sources blend with the paper palette
+  svg += `<defs>
+    <clipPath id="circleClip" clipPathUnits="objectBoundingBox"><circle cx="0.5" cy="0.5" r="0.5"/></clipPath>
+    <filter id="sepiaTint" color-interpolation-filters="sRGB">
+      <feColorMatrix type="matrix" values="0.39 0.77 0.19 0 0  0.35 0.69 0.17 0 0  0.27 0.53 0.13 0 0  0 0 0 0.92 0"/>
+    </filter>
+  </defs>`;
 
   // Concentric grid
   for (let lvl = 1; lvl <= 4; lvl++) {
@@ -1623,14 +1634,21 @@ function renderChart(scores) {
     svg += `<text x="${lx.toFixed(2)}" y="${(ly+5).toFixed(2)}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="500" fill="#1d1a16">${scores[k]}%</text>`;
   });
 
-  // Type name labels outside vertices (no pair labels — pair is the quiet reveal below)
+  // Portraits + name caption per vertex
   keys.forEach((k, i) => {
     const a = (i / n) * Math.PI * 2 - Math.PI / 2;
-    const lr = R + 32;
-    const lx = cx + Math.cos(a) * lr;
-    const ly = cy + Math.sin(a) * lr;
-    const dy = Math.sin(a) > 0.3 ? 14 : (Math.sin(a) < -0.3 ? -4 : 5);
-    svg += `<text x="${lx.toFixed(2)}" y="${(ly+dy).toFixed(2)}" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="22" font-weight="600" fill="#1d1a16">${types[k].name}</text>`;
+    const ix = cx + Math.cos(a) * IMG_DIST;
+    const iy = cy + Math.sin(a) * IMG_DIST;
+    const isWinner = scores[k] === Math.max(...keys.map(kk => scores[kk]));
+    const ringStroke = isWinner ? 2.2 : 1.2;
+    // Paper-coloured backing so PNG transparency / sepia blend cleanly
+    svg += `<circle cx="${ix.toFixed(2)}" cy="${iy.toFixed(2)}" r="${IMG_R + 2}" fill="#fbf6ec"/>`;
+    svg += `<image href="img/${k}.jpg" x="${(ix - IMG_R).toFixed(2)}" y="${(iy - IMG_R).toFixed(2)}" width="${IMG_R * 2}" height="${IMG_R * 2}" preserveAspectRatio="xMidYMid slice" clip-path="url(#circleClip)" filter="url(#sepiaTint)"/>`;
+    svg += `<circle cx="${ix.toFixed(2)}" cy="${iy.toFixed(2)}" r="${IMG_R}" fill="none" stroke="#7a2818" stroke-width="${ringStroke}"/>`;
+    // Name caption below
+    const lx = ix;
+    const ly = iy + LBL_OFFSET;
+    svg += `<text x="${lx.toFixed(2)}" y="${ly.toFixed(2)}" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="20" font-weight="600" fill="#1d1a16">${types[k].name}</text>`;
   });
 
   svg += '</svg>';
