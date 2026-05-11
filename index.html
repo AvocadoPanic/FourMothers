@@ -839,7 +839,7 @@ const TYPE_ORDER = {
   men: Object.keys(TYPES.men)
 };
 
-const VERSION = 'v2.4';
+const VERSION = 'v2.5';
 
 /* ============================================================
    PRONOUN RESOLUTION
@@ -1056,10 +1056,10 @@ const Q_WOMEN = [
     ]},
   { q: "{Your} arc with serious ambitions — a degree, a manuscript, a launch:",
     opts: [
-      { t: "{I} have always been more capable than {I} let {myself} be. {I} talked {myself} out of things {I} could have done.", w: { waif: 3 } },
-      { t: "{I} have started serious work and could not bring {myself} to finish. The dissertation, the book, the move.", w: { hermit: 3 } },
+      { t: "{I} have not started things {I} was capable of starting. {I} did not feel entitled to.", w: { waif: 3 } },
+      { t: "{I} have started and stalled. The dissertation, the manuscript — open for years, never submitted.", w: { hermit: 3 } },
       { t: "{I} have used {my} accomplishments to be seen. The work matters less than the recognition.", w: { queen: 3 } },
-      { t: "{I} get what {I} want by force when {I} need to. {I} use credentials; {I} {am} not used by them.", w: { witch: 3 } }
+      { t: "{I} take what {I} want. Credentials do not stop {me}, and they do not define {me} either.", w: { witch: 3 } }
     ]},
   { q: "{Your} relationship to therapy or help:",
     opts: [
@@ -1070,10 +1070,10 @@ const Q_WOMEN = [
     ]},
   { q: "With {your} children, the truth is:",
     opts: [
-      { t: "{I} cannot bear to disappoint any of them. {I} say yes when {I} mean no.", w: { waif: 3 } },
-      { t: "One is closer to {me}; the others {I} watch with suspicion.", w: { hermit: 3 } },
-      { t: "One reflects {my} taste; the others are difficult.", w: { queen: 3 } },
-      { t: "One is the good child; one is the problem. The pattern has been consistent.", w: { witch: 3 } }
+      { t: "{I} cannot maintain a rule. They run the house. {I} need them to love {me}.", w: { waif: 3 } },
+      { t: "{I} hold them too close. {Their} pulling away threatens {me}.", w: { hermit: 3 } },
+      { t: "They are extensions of {me}. {Their} job is to reflect well on {me}.", w: { queen: 3 } },
+      { t: "{I} have decided early what each of them is. {I} do not revise it.", w: { witch: 3 } }
     ]},
   { q: "After {I} have done something hurtful:",
     opts: [
@@ -1082,12 +1082,12 @@ const Q_WOMEN = [
       { t: "{I} retell it so the harm is theirs, not mine.", w: { queen: 3 } },
       { t: "{I} do not concede ground. They had it coming.", w: { witch: 3 } }
     ]},
-  { q: "The gap between how others see {me} and what happens at home:",
+  { q: "To people who know {me} casually, {I} appear:",
     opts: [
-      { t: "Small. {I} {am} the same sad person everywhere.", w: { waif: 3 } },
-      { t: "Large. Outside {I} {am} composed. Inside {my} house no one is safe from {my} mood.", w: { hermit: 3 } },
-      { t: "Large. {I} perform warmth and competence in public; the family knows otherwise.", w: { queen: 3 } },
-      { t: "Large. People who do not live with {me} would not recognize the description.", w: { witch: 3 } }
+      { t: "Fragile. Burdened. People worry. {My} sadness is visible.", w: { waif: 3 } },
+      { t: "Reserved. Composed. Slightly remote — they sense walls.", w: { hermit: 3 } },
+      { t: "Charming. Impressive. People want to be near {me}.", w: { queen: 3 } },
+      { t: "Pleasant. Friendly. Far more pleasant than the people who live with {me} would recognize.", w: { witch: 3 } }
     ]},
   { q: "What lingers most from {my} own childhood:",
     opts: [
@@ -1342,10 +1342,10 @@ const Q_MEN = [
     ]},
   { q: "How {I} appear to people who know {me} casually:",
     opts: [
-      { t: "Quiet. They do not know {me} well.", w: { frog: 3 } },
+      { t: "Distant. Hard to read. Often elsewhere in {my} head.", w: { frog: 3 } },
       { t: "Decent. Reliable. Easy to underestimate.", w: { huntsman: 3 } },
       { t: "Impressive. Successful. Slightly intimidating.", w: { king: 3 } },
-      { t: "Easy to overlook. The wife is the personality.", w: { fisherman: 3 } }
+      { t: "Forgettable. The wife is the personality in the room.", w: { fisherman: 3 } }
     ]},
   { q: "When {my} child comes to me upset, the first thing {I} do is:",
     opts: [
@@ -1363,17 +1363,17 @@ const Q_MEN = [
     ]},
   { q: "When {I} feel cornered or accused:",
     opts: [
-      { t: "{I} go absent. {I} disappear.", w: { frog: 3 } },
-      { t: "{I} dig in. {I} repeat what {I} have always done.", w: { huntsman: 3 } },
-      { t: "{I} go wounded. {I} withdraw with dignity.", w: { king: 3 } },
-      { t: "{I} retreat into her version of events.", w: { fisherman: 3 } }
+      { t: "{I} go silent and leave. Later {I} reappear as if nothing happened.", w: { frog: 3 } },
+      { t: "{I} dig in. {I} repeat the principle. {I} do not yield ground.", w: { huntsman: 3 } },
+      { t: "{I} make sure they know they have wounded {me}. Then {I} withdraw with dignity.", w: { king: 3 } },
+      { t: "{I} repeat her version of events. {I} have no version of {my} own.", w: { fisherman: 3 } }
     ]},
   { q: "{Your} relationship to therapy or help:",
     opts: [
       { t: "{I} have considered it. {I} have not gone, or {I} have not stayed.", w: { frog: 3 } },
-      { t: "{I} would go if she asked. Not otherwise.", w: { huntsman: 3 } },
+      { t: "{I} would go if {I} thought it would save the marriage. Not for {myself}.", w: { huntsman: 3 } },
       { t: "{I} do not need it. {I} have managed this far.", w: { king: 3 } },
-      { t: "{I} would go if she wanted.", w: { fisherman: 3 } }
+      { t: "{I} would go if she came with {me}. {I} do not act in this alone.", w: { fisherman: 3 } }
     ]}
 ];
 
