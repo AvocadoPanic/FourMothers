@@ -370,6 +370,84 @@ button:focus-visible {
   transition: color 0.15s;
 }
 
+.option-btn.selected {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+}
+
+.option-btn.selected .option-letter {
+  color: rgba(251, 246, 236, 0.72);
+}
+
+.confidence-row {
+  margin-top: 22px;
+  padding: 18px 0 4px;
+  border-top: 1px dotted var(--rule);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.confidence-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  flex: 0 0 auto;
+}
+
+.confidence-chips {
+  display: flex;
+  gap: 6px;
+  flex: 1;
+  flex-wrap: wrap;
+}
+
+.conf-chip {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 8px 16px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 15px;
+  font-style: italic;
+  cursor: pointer;
+  color: var(--ink);
+  transition: all 0.15s;
+}
+
+.conf-chip:hover {
+  border-color: var(--ink);
+}
+
+.conf-chip.active {
+  background: var(--ink);
+  color: var(--paper);
+  border-color: var(--ink);
+  font-style: normal;
+}
+
+.next-btn {
+  margin-top: 18px;
+  padding: 14px 22px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+
+.next-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+
 .back-link {
   font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
@@ -715,7 +793,7 @@ const TYPE_ORDER = {
   men: Object.keys(TYPES.men)
 };
 
-const VERSION = 'v2.1';
+const VERSION = 'v2.2';
 
 /* ============================================================
    PRONOUN RESOLUTION
@@ -915,6 +993,83 @@ const Q_WOMEN = [
       { t: "{I} cut them off in silence and refuse to discuss it.", w: { hermit: 3 } },
       { t: "{I} make sure others knew what was done to {me}.", w: { queen: 3 } },
       { t: "{I} make sure they understood the cost.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} sexual life has tended to be:",
+    opts: [
+      { t: "Given too much, too fast, to men who do not deserve it. Soothing more than pleasure.", w: { waif: 3 } },
+      { t: "Anxious. {I} have suspected partners of wanting other women, without evidence.", w: { hermit: 3 } },
+      { t: "Performative. {I} need to be desired more than {I} need to desire.", w: { queen: 3 } },
+      { t: "A lever. {I} grant or withhold it depending on who needs punishing.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} working life has tended to be:",
+    opts: [
+      { t: "Underemployed. {I} work hard for people who exploit {me}.", w: { waif: 3 } },
+      { t: "Excellent in private. {I} refuse to submit, publish, or be seen.", w: { hermit: 3 } },
+      { t: "Inseparable from {my} standing. {I} need the title to feel real.", w: { queen: 3 } },
+      { t: "Functional. The people at work have not seen what comes out at home.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} arc with serious ambitions — a degree, a manuscript, a launch:",
+    opts: [
+      { t: "{I} have always been more capable than {I} let {myself} be. {I} talked {myself} out of things {I} could have done.", w: { waif: 3 } },
+      { t: "{I} have started serious work and could not bring {myself} to finish. The dissertation, the book, the move.", w: { hermit: 3 } },
+      { t: "{I} have used {my} accomplishments to be seen. The work matters less than the recognition.", w: { queen: 3 } },
+      { t: "{I} get what {I} want by force when {I} need to. {I} use credentials; {I} {am} not used by them.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} relationship to therapy or help:",
+    opts: [
+      { t: "{I} have been in and out of it. {I} {am} usually the patient.", w: { waif: 3 } },
+      { t: "{I} have considered it. The idea of being seen stops {me}.", w: { hermit: 3 } },
+      { t: "{I} have tried it briefly. The therapist did not understand.", w: { queen: 3 } },
+      { t: "{I} do not need it. There is nothing wrong with {me}.", w: { witch: 3 } }
+    ]},
+  { q: "With {your} children, the truth is:",
+    opts: [
+      { t: "{I} cannot bear to disappoint any of them. {I} say yes when {I} mean no.", w: { waif: 3 } },
+      { t: "One is closer to {me}; the others {I} watch with suspicion.", w: { hermit: 3 } },
+      { t: "One reflects {my} taste; the others are difficult.", w: { queen: 3 } },
+      { t: "One is the good child; one is the problem. The pattern has been consistent.", w: { witch: 3 } }
+    ]},
+  { q: "After {I} have done something hurtful:",
+    opts: [
+      { t: "{I} confess. {I} apologize many times. {I} make sure they forgive {me}.", w: { waif: 3 } },
+      { t: "{I} do not discuss it. The episode is closed.", w: { hermit: 3 } },
+      { t: "{I} retell it so the harm is theirs, not mine.", w: { queen: 3 } },
+      { t: "{I} do not concede ground. They had it coming.", w: { witch: 3 } }
+    ]},
+  { q: "The gap between how others see {me} and what happens at home:",
+    opts: [
+      { t: "Small. {I} {am} the same sad person everywhere.", w: { waif: 3 } },
+      { t: "Large. Outside {I} {am} composed. Inside {my} house no one is safe from {my} mood.", w: { hermit: 3 } },
+      { t: "Large. {I} perform warmth and competence in public; the family knows otherwise.", w: { queen: 3 } },
+      { t: "Large. People who do not live with {me} would not recognize the description.", w: { witch: 3 } }
+    ]},
+  { q: "What lingers most from {my} own childhood:",
+    opts: [
+      { t: "A sense {I} was not wanted. {I} took care of someone else's distress.", w: { waif: 3 } },
+      { t: "{I} learned to hide. The house was not safe in ways {I} could not name.", w: { hermit: 3 } },
+      { t: "{I} was deprived of what other children had. {I} have not gotten over it.", w: { queen: 3 } },
+      { t: "{I} survived something cruel. {I} have repaid no one for it.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} friendships with other women have:",
+    opts: [
+      { t: "Been few. {I} caretake people who eventually leave {me}.", w: { waif: 3 } },
+      { t: "Been close, then severed. {I} do not have many left.", w: { hermit: 3 } },
+      { t: "Been performances. {I} need them more than {I} care about them.", w: { queen: 3 } },
+      { t: "Been strategic. {I} divide people into factions {I} control.", w: { witch: 3 } }
+    ]},
+  { q: "Of the worst things {I} have done in conflict:",
+    opts: [
+      { t: "{I} remember every one. {I} replay them at night.", w: { waif: 3 } },
+      { t: "{I} do not discuss them. {I} have walled them off.", w: { hermit: 3 } },
+      { t: "{I} have {my} version. The other party's account is unfair.", w: { queen: 3 } },
+      { t: "{I} do not always remember. {I} would deny much of it.", w: { witch: 3 } }
+    ]},
+  { q: "The thing {I} cannot stand in another person:",
+    opts: [
+      { t: "Indifference to suffering.", w: { waif: 3 } },
+      { t: "Intrusion. Being watched.", w: { hermit: 3 } },
+      { t: "Being upstaged.", w: { queen: 3 } },
+      { t: "Disloyalty.", w: { witch: 3 } }
     ]}
 ];
 
@@ -1096,6 +1251,83 @@ const Q_MEN = [
       { t: "{I} would minimize it to preserve the marriage.", w: { huntsman: 3 } },
       { t: "{I} would resent the child for creating the disturbance.", w: { king: 3 } },
       { t: "{I} would side with her. {I} might call the police on the child.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} pattern with other women, told honestly:",
+    opts: [
+      { t: "{I} have drifted. {I} disappear into someone else when home is bad.", w: { frog: 3 } },
+      { t: "Untouched. {I} do not consider it.", w: { huntsman: 3 } },
+      { t: "{I} expect hers absolutely. {My} own has been conditional.", w: { king: 3 } },
+      { t: "Whatever counts as a violation has been hers to define.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to money:",
+    opts: [
+      { t: "Inconsistent. {I} have been broke and {I} have been fine. {I} do not plan.", w: { frog: 3 } },
+      { t: "Steady, careful, not for {myself}. {I} provide.", w: { huntsman: 3 } },
+      { t: "{I} like having it visible. {I} resent spending it without recognition.", w: { king: 3 } },
+      { t: "She handles it.", w: { fisherman: 3 } }
+    ]},
+  { q: "The story {I} tell about what {I} have built:",
+    opts: [
+      { t: "Early promise, then drift. {I} have lost more chances than {I} have taken.", w: { frog: 3 } },
+      { t: "Slow accumulation. {I} have finished what {I} started, modestly.", w: { huntsman: 3 } },
+      { t: "{I} have made {myself} sound larger than {I} {am}. {My} resume polishes well.", w: { king: 3 } },
+      { t: "Whatever it has been, it has been organized around her.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} friendships outside {your} marriage:",
+    opts: [
+      { t: "Few. {I} drift. The ones {I} have are also drifting.", w: { frog: 3 } },
+      { t: "Steady. Mostly through work or institutions.", w: { huntsman: 3 } },
+      { t: "Strategic. {I} maintain whoever is useful.", w: { king: 3 } },
+      { t: "Allowed by her. {I} do not have any she would disapprove of.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} own mother was:",
+    opts: [
+      { t: "{I} cannot quite remember her clearly.", w: { frog: 3 } },
+      { t: "{I} took care of her. She needed {me} to.", w: { huntsman: 3 } },
+      { t: "She admired {me}. {I} was her project.", w: { king: 3 } },
+      { t: "She was frightening. {I} learned to disappear in her presence.", w: { fisherman: 3 } }
+    ]},
+  { q: "After {I} have failed {my} wife or {my} child:",
+    opts: [
+      { t: "{I} drift away from it. {I} do not have the bandwidth.", w: { frog: 3 } },
+      { t: "{I} feel guilty for a long time. {I} make it up by working harder.", w: { huntsman: 3 } },
+      { t: "{I} explain why it was unavoidable.", w: { king: 3 } },
+      { t: "{I} ask her how to fix it.", w: { fisherman: 3 } }
+    ]},
+  { q: "How {I} appear to people who know {me} casually:",
+    opts: [
+      { t: "Quiet. They do not know {me} well.", w: { frog: 3 } },
+      { t: "Decent. Reliable. Easy to underestimate.", w: { huntsman: 3 } },
+      { t: "Impressive. Successful. Slightly intimidating.", w: { king: 3 } },
+      { t: "Easy to overlook. The wife is the personality.", w: { fisherman: 3 } }
+    ]},
+  { q: "When {my} child comes to me upset, the first thing {I} do is:",
+    opts: [
+      { t: "Try to make it stop. {I} get out of the room if {I} can.", w: { frog: 3 } },
+      { t: "Tell them they are stronger than they think.", w: { huntsman: 3 } },
+      { t: "Listen briefly, then redirect to {my} own concerns.", w: { king: 3 } },
+      { t: "Suggest they take it to their mother.", w: { fisherman: 3 } }
+    ]},
+  { q: "Of the times {I} failed {my} children to keep peace with their mother:",
+    opts: [
+      { t: "{I} have lost track. {I} was not present for much of it.", w: { frog: 3 } },
+      { t: "{I} remember a few. {I} thought {I} was protecting the marriage.", w: { huntsman: 3 } },
+      { t: "{I} do not see them that way. {I} did what was reasonable.", w: { king: 3 } },
+      { t: "{I} did what she would have wanted. {I} do not separate it from her judgment.", w: { fisherman: 3 } }
+    ]},
+  { q: "When {I} feel cornered or accused:",
+    opts: [
+      { t: "{I} go absent. {I} disappear.", w: { frog: 3 } },
+      { t: "{I} dig in. {I} repeat what {I} have always done.", w: { huntsman: 3 } },
+      { t: "{I} go wounded. {I} withdraw with dignity.", w: { king: 3 } },
+      { t: "{I} retreat into her version of events.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to therapy or help:",
+    opts: [
+      { t: "{I} have considered it. {I} have not gone, or {I} have not stayed.", w: { frog: 3 } },
+      { t: "{I} would go if she asked. Not otherwise.", w: { huntsman: 3 } },
+      { t: "{I} do not need it. {I} have managed this far.", w: { king: 3 } },
+      { t: "{I} would go if she wanted.", w: { fisherman: 3 } }
     ]}
 ];
 
@@ -1107,16 +1339,21 @@ const state = {
   mode: 'self',        // 'self' or 'proxy'
   quiz: null,
   qIndex: 0,
-  answers: []
+  answers: [],         // each: { optIdx, weights, confidence: 1|2|3 }
+  pending: null        // { optIdx, confidence } — current unconfirmed selection
 };
+
+const CONFIDENCE_LABELS = { 1: 'Loosely', 2: 'Mostly', 3: 'Exactly' };
 
 const $app = document.getElementById('app');
 
-function render() {
+function render(animate = true) {
   $app.innerHTML = '';
-  $app.classList.remove('fade-in');
-  void $app.offsetWidth;
-  $app.classList.add('fade-in');
+  if (animate) {
+    $app.classList.remove('fade-in');
+    void $app.offsetWidth;
+    $app.classList.add('fade-in');
+  }
 
   if (state.view === 'home') return renderHome();
   if (state.view === 'quiz') return renderQuiz();
@@ -1188,6 +1425,7 @@ window.startQuiz = function(which) {
   state.quiz = which;
   state.qIndex = 0;
   state.answers = [];
+  state.pending = null;
   render();
 };
 
@@ -1205,6 +1443,22 @@ function renderQuiz() {
   const letters = ['A', 'B', 'C', 'D'];
   const instrumentName = state.quiz === 'women' ? 'The Four Mothers' : 'The Four Fathers';
   const modeTag = state.mode === 'self' ? 'About me' : 'About someone in my life';
+  const pending = state.pending;
+
+  const confidenceBlock = pending ? `
+    <div class="confidence-row">
+      <span class="confidence-label">How well does that describe?</span>
+      <div class="confidence-chips" role="radiogroup" aria-label="Confidence">
+        ${[1, 2, 3].map(level => `
+          <button class="conf-chip ${pending.confidence === level ? 'active' : ''}"
+                  role="radio"
+                  aria-checked="${pending.confidence === level}"
+                  onclick="setConfidence(${level})">${CONFIDENCE_LABELS[level]}</button>
+        `).join('')}
+      </div>
+    </div>
+    <button class="next-btn" onclick="confirmAnswer()">Next \u2192</button>
+  ` : '';
 
   $app.innerHTML = `
     <div class="masthead">
@@ -1222,22 +1476,44 @@ function renderQuiz() {
     <h2 class="question-text">${resolvePronouns(q.q, state.mode)}</h2>
     <div class="options-list">
       ${q.opts.map((o, idx) => `
-        <button class="option-btn" onclick="answer(${idx})">
+        <button class="option-btn ${pending && pending.optIdx === idx ? 'selected' : ''}" onclick="selectOption(${idx})">
           <span class="option-letter">${letters[idx]}.</span>
           <span>${resolvePronouns(o.t, state.mode)}</span>
         </button>
       `).join('')}
     </div>
+    ${confidenceBlock}
     <button class="back-link" onclick="goBack()">${i === 0 ? '\u2190 Back to menu' : '\u2190 Previous item'}</button>
   `;
 }
 
-window.answer = function(optIdx) {
+window.selectOption = function(optIdx) {
+  const prevConfidence = state.pending ? state.pending.confidence : 2;
+  state.pending = { optIdx, confidence: prevConfidence };
+  render(false);
+};
+
+window.setConfidence = function(level) {
+  if (!state.pending) return;
+  state.pending.confidence = level;
+  render(false);
+};
+
+window.confirmAnswer = function() {
+  if (!state.pending) return;
   const q = getQuestions()[state.qIndex];
-  state.answers[state.qIndex] = q.opts[optIdx].w;
+  state.answers[state.qIndex] = {
+    optIdx: state.pending.optIdx,
+    weights: q.opts[state.pending.optIdx].w,
+    confidence: state.pending.confidence
+  };
   state.qIndex++;
   if (state.qIndex >= getQuestions().length) {
     state.view = 'results';
+    state.pending = null;
+  } else {
+    const next = state.answers[state.qIndex];
+    state.pending = next ? { optIdx: next.optIdx, confidence: next.confidence } : null;
   }
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1247,26 +1523,33 @@ window.goBack = function() {
   if (state.qIndex === 0) {
     state.view = 'home';
     state.quiz = null;
+    state.qIndex = 0;
     state.answers = [];
+    state.pending = null;
   } else {
     state.qIndex--;
-    state.answers.pop();
+    const prev = state.answers[state.qIndex];
+    state.pending = prev ? { optIdx: prev.optIdx, confidence: prev.confidence } : null;
   }
   render();
 };
 
 /* ---------- SCORING ----------
-   Each option weights exactly one type, so every answer adds 3 to one
-   type's earned total. Reporting as share-of-total makes the headline
-   number reflect relative dominance instead of a per-axis ceiling that
-   only the most consistent respondent ever approaches. */
+   Each option weights exactly one type, multiplied by confidence
+   (Loosely=1, Mostly=2, Exactly=3). Reporting as share-of-total makes
+   the headline number reflect relative dominance instead of a per-axis
+   ceiling that only the most consistent respondent ever approaches. */
 function computeScores() {
   const keys = TYPE_ORDER[state.quiz];
 
   const earned = {};
   keys.forEach(k => earned[k] = 0);
-  state.answers.forEach(w => {
-    Object.keys(w).forEach(k => { earned[k] = (earned[k] || 0) + w[k]; });
+  state.answers.forEach(a => {
+    if (!a) return;
+    const mult = a.confidence || 2;
+    Object.keys(a.weights).forEach(k => {
+      earned[k] = (earned[k] || 0) + a.weights[k] * mult;
+    });
   });
 
   const total = keys.reduce((s, k) => s + earned[k], 0) || 1;
@@ -1431,6 +1714,7 @@ function formatName(name) {
 window.retakeQuiz = function() {
   state.qIndex = 0;
   state.answers = [];
+  state.pending = null;
   state.view = 'quiz';
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1441,6 +1725,7 @@ window.goHome = function() {
   state.quiz = null;
   state.qIndex = 0;
   state.answers = [];
+  state.pending = null;
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
 };
