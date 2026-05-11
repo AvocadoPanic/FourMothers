@@ -380,6 +380,52 @@ button:focus-visible {
   color: rgba(251, 246, 236, 0.72);
 }
 
+.option-btn.neutral {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--rule);
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-faint);
+  margin-top: 8px;
+}
+
+.option-btn.neutral .option-letter {
+  color: var(--ink-faint);
+}
+
+.option-btn.neutral:hover {
+  background: var(--paper-warm);
+  border-color: var(--ink-faint);
+  color: var(--ink);
+}
+
+.option-btn.neutral.selected {
+  background: var(--ink-faint);
+  color: var(--paper);
+  border-style: solid;
+  border-color: var(--ink-faint);
+  font-style: normal;
+}
+
+.option-btn.neutral.selected .option-letter {
+  color: rgba(251, 246, 236, 0.72);
+}
+
+.neutral-note {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-faint);
+  margin-top: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.results-headline.no-match .results-title {
+  font-size: clamp(34px, 7vw, 48px);
+}
+
 .confidence-row {
   margin-top: 22px;
   padding: 18px 0 4px;
@@ -793,7 +839,7 @@ const TYPE_ORDER = {
   men: Object.keys(TYPES.men)
 };
 
-const VERSION = 'v2.3';
+const VERSION = 'v2.4';
 
 /* ============================================================
    PRONOUN RESOLUTION
@@ -1344,6 +1390,8 @@ const state = {
 };
 
 const CONFIDENCE_LABELS = { 1: 'Loosely', 2: 'Mostly', 3: 'Exactly' };
+const NEUTRAL_OPTION_TEXT = "None of these describes {me}.";
+const NEUTRAL_OPT_IDX = 4;
 
 const $app = document.getElementById('app');
 
@@ -1445,7 +1493,8 @@ function renderQuiz() {
   const modeTag = state.mode === 'self' ? 'About me' : 'About someone in my life';
   const pending = state.pending;
 
-  const confidenceBlock = pending ? `
+  const showConfidence = pending && !pending.neutral;
+  const confidenceBlock = showConfidence ? `
     <div class="confidence-row">
       <span class="confidence-label">How well does that describe?</span>
       <div class="confidence-chips" role="radiogroup" aria-label="Confidence">
@@ -1457,8 +1506,8 @@ function renderQuiz() {
         `).join('')}
       </div>
     </div>
-    <button class="next-btn" onclick="confirmAnswer()">Next \u2192</button>
   ` : '';
+  const nextButton = pending ? `<button class="next-btn" onclick="confirmAnswer()">Next \u2192</button>` : '';
 
   $app.innerHTML = `
     <div class="masthead">
@@ -1476,44 +1525,64 @@ function renderQuiz() {
     <h2 class="question-text">${resolvePronouns(q.q, state.mode)}</h2>
     <div class="options-list">
       ${q.opts.map((o, idx) => `
-        <button class="option-btn ${pending && pending.optIdx === idx ? 'selected' : ''}" onclick="selectOption(${idx})">
+        <button class="option-btn ${pending && !pending.neutral && pending.optIdx === idx ? 'selected' : ''}" onclick="selectOption(${idx})">
           <span class="option-letter">${letters[idx]}.</span>
           <span>${resolvePronouns(o.t, state.mode)}</span>
         </button>
       `).join('')}
+      <button class="option-btn neutral ${pending && pending.neutral ? 'selected' : ''}" onclick="selectNeutral()">
+        <span class="option-letter">E.</span>
+        <span>${resolvePronouns(NEUTRAL_OPTION_TEXT, state.mode)}</span>
+      </button>
     </div>
     ${confidenceBlock}
+    ${nextButton}
     <button class="back-link" onclick="goBack()">${i === 0 ? '\u2190 Back to menu' : '\u2190 Previous item'}</button>
   `;
 }
 
+function pendingFromAnswer(a) {
+  if (!a) return null;
+  if (a.neutral) return { optIdx: NEUTRAL_OPT_IDX, neutral: true };
+  return { optIdx: a.optIdx, confidence: a.confidence };
+}
+
 window.selectOption = function(optIdx) {
-  const prevConfidence = state.pending ? state.pending.confidence : 2;
+  const prevConfidence = state.pending && !state.pending.neutral ? state.pending.confidence : 2;
   state.pending = { optIdx, confidence: prevConfidence };
   render(false);
 };
 
+window.selectNeutral = function() {
+  state.pending = { optIdx: NEUTRAL_OPT_IDX, neutral: true };
+  render(false);
+};
+
 window.setConfidence = function(level) {
-  if (!state.pending) return;
+  if (!state.pending || state.pending.neutral) return;
   state.pending.confidence = level;
   render(false);
 };
 
 window.confirmAnswer = function() {
   if (!state.pending) return;
-  const q = getQuestions()[state.qIndex];
-  state.answers[state.qIndex] = {
-    optIdx: state.pending.optIdx,
-    weights: q.opts[state.pending.optIdx].w,
-    confidence: state.pending.confidence
-  };
+  const p = state.pending;
+  if (p.neutral) {
+    state.answers[state.qIndex] = { neutral: true };
+  } else {
+    const q = getQuestions()[state.qIndex];
+    state.answers[state.qIndex] = {
+      optIdx: p.optIdx,
+      weights: q.opts[p.optIdx].w,
+      confidence: p.confidence
+    };
+  }
   state.qIndex++;
   if (state.qIndex >= getQuestions().length) {
     state.view = 'results';
     state.pending = null;
   } else {
-    const next = state.answers[state.qIndex];
-    state.pending = next ? { optIdx: next.optIdx, confidence: next.confidence } : null;
+    state.pending = pendingFromAnswer(state.answers[state.qIndex]);
   }
   render();
   window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -1528,24 +1597,25 @@ window.goBack = function() {
     state.pending = null;
   } else {
     state.qIndex--;
-    const prev = state.answers[state.qIndex];
-    state.pending = prev ? { optIdx: prev.optIdx, confidence: prev.confidence } : null;
+    state.pending = pendingFromAnswer(state.answers[state.qIndex]);
   }
   render();
 };
 
 /* ---------- SCORING ----------
-   Each option weights exactly one type, multiplied by confidence
-   (Loosely=1, Mostly=2, Exactly=3). Reporting as share-of-total makes
-   the headline number reflect relative dominance instead of a per-axis
-   ceiling that only the most consistent respondent ever approaches. */
+   Each typed option weights exactly one type, multiplied by confidence
+   (Loosely=1, Mostly=2, Exactly=3). Neutral answers ("none of these")
+   contribute nothing to any type and are tracked separately. Reporting
+   as share-of-total of typed answers makes the headline number reflect
+   relative dominance among the patterns the respondent actually saw
+   themselves in. The neutral count is reported alongside. */
 function computeScores() {
   const keys = TYPE_ORDER[state.quiz];
 
   const earned = {};
   keys.forEach(k => earned[k] = 0);
   state.answers.forEach(a => {
-    if (!a) return;
+    if (!a || a.neutral) return;
     const mult = a.confidence || 2;
     Object.keys(a.weights).forEach(k => {
       earned[k] = (earned[k] || 0) + a.weights[k] * mult;
@@ -1558,6 +1628,17 @@ function computeScores() {
     pct[k] = Math.round((earned[k] / total) * 100);
   });
   return pct;
+}
+
+function countNeutrals() {
+  return state.answers.filter(a => a && a.neutral).length;
+}
+
+function classifyResult(neutralCount, totalAnswered) {
+  const pct = totalAnswered ? neutralCount / totalAnswered : 0;
+  if (pct >= 0.45) return 'no-match';
+  if (pct >= 0.25) return 'tentative';
+  return 'clear';
 }
 
 /* ---------- CHART (4-axis radar with portraits) ---------- */
@@ -1660,6 +1741,9 @@ function renderResults() {
   const scores = computeScores();
   const keys = TYPE_ORDER[state.quiz];
   const types = TYPES[state.quiz];
+  const totalAnswered = state.answers.length;
+  const neutralCount = countNeutrals();
+  const resultMode = classifyResult(neutralCount, totalAnswered);
 
   const ranked = keys.slice().sort((a, b) => scores[b] - scores[a]);
   const winnerKey = ranked[0];
@@ -1668,25 +1752,33 @@ function renderResults() {
   const maxScore = Math.max(...Object.values(scores), 1);
 
   const instrumentName = state.quiz === 'women' ? 'The Four Mothers' : 'The Four Fathers';
-  const kicker = state.mode === 'self' ? 'You are closest to' : 'What you describe is closest to';
 
-  $app.innerHTML = `
-    <div class="masthead">
-      <span>Results</span>
-      <span class="center">${instrumentName}</span>
-      <span>${state.mode === 'self' ? 'About me' : 'About someone'}</span>
-    </div>
+  const headline = (() => {
+    if (resultMode === 'no-match') {
+      const title = state.mode === 'self'
+        ? "{I} did not recognize {myself} in these patterns"
+        : "What {I} describe does not fit these patterns";
+      return `
+        <div class="results-headline no-match">
+          <div class="results-kicker">No strong match</div>
+          <h1 class="results-title">${resolvePronouns(title, state.mode)}</h1>
+          <div class="results-pct">${neutralCount} of ${totalAnswered} items did not align with any pattern</div>
+        </div>
+      `;
+    }
+    const kicker = resultMode === 'tentative'
+      ? (state.mode === 'self' ? 'Tentatively closest to' : 'What you describe is tentatively closest to')
+      : (state.mode === 'self' ? 'You are closest to' : 'What you describe is closest to');
+    return `
+      <div class="results-headline">
+        <div class="results-kicker">${kicker}</div>
+        <h1 class="results-title">The ${formatName(winner.name)}</h1>
+        <div class="results-pct">Match score <span class="big">${winnerPct}%</span> &middot; of items that aligned with any pattern</div>
+      </div>
+    `;
+  })();
 
-    <div class="results-headline">
-      <div class="results-kicker">${kicker}</div>
-      <h1 class="results-title">The ${formatName(winner.name)}</h1>
-      <div class="results-pct">Match score <span class="big">${winnerPct}%</span></div>
-    </div>
-
-    <div class="chart-container">
-      ${renderChart(scores)}
-    </div>
-
+  const profileSection = resultMode === 'no-match' ? '' : `
     <div class="profile-card">
       <div class="label">Profile</div>
       <h3>The ${winner.name}</h3>
@@ -1702,6 +1794,28 @@ function renderResults() {
       <h4>${formatName(winner.partnerTitle)}</h4>
       <p>${winner.partnerProfile}</p>
     </div>
+  `;
+
+  const neutralNote = (resultMode !== 'no-match' && neutralCount > 0) ? `
+    <p class="neutral-note">${neutralCount} of ${totalAnswered} items did not align with any of the four patterns.</p>
+  ` : '';
+
+  $app.innerHTML = `
+    <div class="masthead">
+      <span>Results</span>
+      <span class="center">${instrumentName}</span>
+      <span>${state.mode === 'self' ? 'About me' : 'About someone'}</span>
+    </div>
+
+    ${headline}
+
+    <div class="chart-container">
+      ${renderChart(scores)}
+    </div>
+
+    ${neutralNote}
+
+    ${profileSection}
 
     <div class="breakdown">
       <h4>Full distribution</h4>
