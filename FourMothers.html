@@ -3,6 +3,10 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="A field guide to four kinds of difficult mother and the four kinds of husband who marry them. Adapted from Christine Ann Lawson's Understanding the Borderline Mother.">
+<meta property="og:title" content="Four Mothers, Four Fathers">
+<meta property="og:description" content="A field guide to four kinds of difficult mother and the four kinds of husband who marry them.">
+<meta property="og:type" content="website">
 <title>Four Mothers, Four Fathers</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -171,6 +175,20 @@ h1 em {
 
 .toggle-btn:not(.active):hover {
   background: var(--paper-warm);
+}
+
+button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 .toggle-hint {
@@ -693,43 +711,30 @@ const TYPES = {
 };
 
 const TYPE_ORDER = {
-  women: ['waif', 'hermit', 'queen', 'witch'],
-  men: ['frog', 'huntsman', 'king', 'fisherman']
+  women: Object.keys(TYPES.women),
+  men: Object.keys(TYPES.men)
 };
+
+const VERSION = 'v2.1';
 
 /* ============================================================
    PRONOUN RESOLUTION
+   Single-pass dispatch — order-independent so {you} can't shadow {youO}.
    ============================================================ */
+const PRONOUNS = {
+  self: { I: 'I', me: 'me', my: 'my', My: 'My', myself: 'myself',
+          am: 'am', was: 'was', youO: 'you', you: 'you',
+          your: 'your', Your: 'Your', yourself: 'yourself' },
+  proxy: { I: 'They', me: 'them', my: 'their', My: 'Their', myself: 'themselves',
+           am: 'are', was: 'were', youO: 'them', you: 'they',
+           your: 'their', Your: 'Their', yourself: 'themselves' }
+};
+
 function resolvePronouns(text, mode) {
-  if (mode === 'self') {
-    return text
-      .replace(/\{I\}/g, 'I')
-      .replace(/\{me\}/g, 'me')
-      .replace(/\{my\}/g, 'my')
-      .replace(/\{My\}/g, 'My')
-      .replace(/\{myself\}/g, 'myself')
-      .replace(/\{am\}/g, 'am')
-      .replace(/\{was\}/g, 'was')
-      .replace(/\{youO\}/g, 'you')
-      .replace(/\{you\}/g, 'you')
-      .replace(/\{your\}/g, 'your')
-      .replace(/\{Your\}/g, 'Your')
-      .replace(/\{yourself\}/g, 'yourself');
-  } else {
-    return text
-      .replace(/\{I\}/g, 'They')
-      .replace(/\{me\}/g, 'them')
-      .replace(/\{my\}/g, 'their')
-      .replace(/\{My\}/g, 'Their')
-      .replace(/\{myself\}/g, 'themselves')
-      .replace(/\{am\}/g, 'are')
-      .replace(/\{was\}/g, 'were')
-      .replace(/\{youO\}/g, 'them')
-      .replace(/\{you\}/g, 'they')
-      .replace(/\{your\}/g, 'their')
-      .replace(/\{Your\}/g, 'Their')
-      .replace(/\{yourself\}/g, 'themselves');
-  }
+  const table = PRONOUNS[mode] || PRONOUNS.self;
+  return text.replace(/\{(\w+)\}/g, (_, key) =>
+    Object.prototype.hasOwnProperty.call(table, key) ? table[key] : `{${key}}`
+  );
 }
 
 /* ============================================================
@@ -1124,7 +1129,7 @@ function renderHome() {
     <div class="masthead">
       <span>A Field Guide</span>
       <span class="center">Four mothers, four fathers</span>
-      <span>v2.0</span>
+      <span>${VERSION}</span>
     </div>
     <div class="kicker">After Lawson</div>
     <h1>Four kinds of <em>difficult</em> mother.<br>Four kinds of <em>husband</em> who marry them.</h1>
@@ -1234,8 +1239,8 @@ window.answer = function(optIdx) {
   if (state.qIndex >= getQuestions().length) {
     state.view = 'results';
   }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 window.goBack = function() {
@@ -1250,10 +1255,13 @@ window.goBack = function() {
   render();
 };
 
-/* ---------- SCORING ---------- */
+/* ---------- SCORING ----------
+   Each option weights exactly one type, so every answer adds 3 to one
+   type's earned total. Reporting as share-of-total makes the headline
+   number reflect relative dominance instead of a per-axis ceiling that
+   only the most consistent respondent ever approaches. */
 function computeScores() {
   const keys = TYPE_ORDER[state.quiz];
-  const questions = getQuestions();
 
   const earned = {};
   keys.forEach(k => earned[k] = 0);
@@ -1261,23 +1269,10 @@ function computeScores() {
     Object.keys(w).forEach(k => { earned[k] = (earned[k] || 0) + w[k]; });
   });
 
-  const maxPossible = {};
-  keys.forEach(k => maxPossible[k] = 0);
-  questions.forEach(q => {
-    keys.forEach(k => {
-      let best = 0;
-      q.opts.forEach(o => {
-        const v = o.w[k] || 0;
-        if (v > best) best = v;
-      });
-      maxPossible[k] += best;
-    });
-  });
-
+  const total = keys.reduce((s, k) => s + earned[k], 0) || 1;
   const pct = {};
   keys.forEach(k => {
-    const max = maxPossible[k] || 1;
-    pct[k] = Math.round((earned[k] / max) * 100);
+    pct[k] = Math.round((earned[k] / total) * 100);
   });
   return pct;
 }
@@ -1292,7 +1287,8 @@ function renderChart(scores) {
   const cy = H / 2;
   const R = 150;
 
-  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="chart-svg">`;
+  const summary = keys.map(k => `${types[k].name} ${scores[k]}%`).join(', ');
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="chart-svg" role="img" aria-label="Score distribution across four types: ${summary}"><title>Score distribution</title>`;
 
   // Concentric grid
   for (let lvl = 1; lvl <= 4; lvl++) {
@@ -1436,8 +1432,8 @@ window.retakeQuiz = function() {
   state.qIndex = 0;
   state.answers = [];
   state.view = 'quiz';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 window.goHome = function() {
@@ -1445,8 +1441,8 @@ window.goHome = function() {
   state.quiz = null;
   state.qIndex = 0;
   state.answers = [];
-  window.scrollTo({ top: 0, behavior: 'smooth' });
   render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 };
 
 render();
