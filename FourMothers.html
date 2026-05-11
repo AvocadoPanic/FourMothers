@@ -1,0 +1,1455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Four Mothers, Four Fathers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #f3ede2;
+  --paper: #fbf6ec;
+  --paper-warm: #f7f0e1;
+  --ink: #1d1a16;
+  --ink-soft: #5a5048;
+  --ink-faint: #8a7e72;
+  --rule: #cabea8;
+  --accent: #7a2818;
+  --accent-faint: rgba(122, 40, 24, 0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { overflow-x: hidden; }
+
+body {
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+  padding: 24px 16px 80px;
+  font-size: 18px;
+  line-height: 1.55;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image: radial-gradient(rgba(29, 26, 22, 0.16) 1px, transparent 1px);
+  background-size: 4px 4px;
+  opacity: 0.1;
+  z-index: 0;
+  mix-blend-mode: multiply;
+}
+
+.container {
+  max-width: 660px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+}
+
+.masthead {
+  border-top: 2px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+  padding: 10px 0;
+  margin-bottom: 36px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.masthead .center {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 14px;
+  letter-spacing: 0;
+  text-transform: none;
+  font-weight: 500;
+}
+
+.kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.22em;
+  color: var(--accent);
+  margin-bottom: 18px;
+}
+
+h1 {
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 600;
+  font-size: clamp(40px, 8.5vw, 60px);
+  line-height: 0.98;
+  letter-spacing: -0.012em;
+  margin-bottom: 22px;
+  color: var(--ink);
+}
+
+h1 em {
+  font-style: italic;
+  font-weight: 500;
+}
+
+.deck {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 20px;
+  font-style: italic;
+  color: var(--ink-soft);
+  margin-bottom: 24px;
+  line-height: 1.4;
+  font-weight: 400;
+}
+
+.lede {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  color: var(--ink);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+
+.lede em { font-style: italic; }
+
+.attribution {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-faint);
+  letter-spacing: 0.05em;
+  line-height: 1.55;
+  padding: 14px 0;
+  border-top: 1px solid var(--rule);
+  border-bottom: 1px solid var(--rule);
+  margin: 28px 0;
+}
+
+.section-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 28px 0 14px;
+}
+
+.toggle-group {
+  display: flex;
+  gap: 0;
+  border: 1px solid var(--ink);
+  margin-bottom: 8px;
+}
+
+.toggle-btn {
+  flex: 1;
+  background: var(--paper);
+  border: none;
+  padding: 14px 16px;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  font-weight: 500;
+  cursor: pointer;
+  color: var(--ink);
+  border-right: 1px solid var(--ink);
+  transition: all 0.15s ease;
+}
+
+.toggle-btn:last-child { border-right: none; }
+
+.toggle-btn.active {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.toggle-btn:not(.active):hover {
+  background: var(--paper-warm);
+}
+
+.toggle-hint {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 14px;
+  color: var(--ink-faint);
+  margin-bottom: 22px;
+}
+
+.choice-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.choice-card {
+  background: var(--paper);
+  border: 1px solid var(--ink);
+  border-radius: 0;
+  padding: 22px 22px;
+  cursor: pointer;
+  text-align: left;
+  font-family: inherit;
+  transition: all 0.18s ease;
+  display: flex;
+  align-items: baseline;
+  gap: 20px;
+  width: 100%;
+  color: inherit;
+}
+
+.choice-card:hover {
+  background: var(--ink);
+  color: var(--paper);
+}
+.choice-card:hover .choice-num,
+.choice-card:hover .choice-meta { color: rgba(251, 246, 236, 0.72); }
+
+.choice-num {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  letter-spacing: 0.15em;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 5px;
+  transition: color 0.18s;
+}
+
+.choice-content h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 26px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  letter-spacing: -0.005em;
+  line-height: 1.05;
+}
+
+.choice-content h3 em { font-style: italic; }
+
+.choice-meta {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  transition: color 0.18s;
+  line-height: 1.5;
+}
+
+.footnote {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 15px;
+  color: var(--ink-faint);
+  margin-top: 28px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.progress-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  color: var(--ink-faint);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+.progress-row .right {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 15px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
+}
+
+.progress-bar {
+  height: 1px;
+  background: var(--rule);
+  margin-bottom: 36px;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-fill {
+  position: absolute;
+  inset: -1px auto -1px 0;
+  background: var(--accent);
+  transition: width 0.35s ease;
+}
+
+.q-mode-tag {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+}
+
+.q-number {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.question-text {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(24px, 5.5vw, 30px);
+  font-weight: 500;
+  line-height: 1.22;
+  margin-bottom: 28px;
+  letter-spacing: -0.005em;
+}
+
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option-btn {
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  border-radius: 0;
+  padding: 16px 20px;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  line-height: 1.4;
+  color: var(--ink);
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+
+.option-btn:hover {
+  background: white;
+  border-color: var(--ink);
+}
+
+.option-letter {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  flex-shrink: 0;
+  margin-top: 5px;
+  width: 16px;
+  transition: color 0.15s;
+}
+
+.back-link {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 14px 0;
+  margin-top: 22px;
+}
+
+.back-link:hover { color: var(--accent); }
+
+.results-headline {
+  margin-bottom: 6px;
+}
+
+.results-kicker {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.25em;
+  color: var(--accent);
+  margin-bottom: 10px;
+}
+
+.results-title {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: clamp(46px, 11vw, 72px);
+  font-weight: 600;
+  line-height: 0.95;
+  letter-spacing: -0.015em;
+  margin-bottom: 6px;
+}
+
+.results-title em { font-style: italic; }
+
+.results-pct {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-soft);
+  letter-spacing: 0.12em;
+  margin-top: 12px;
+  text-transform: uppercase;
+}
+
+.results-pct .big {
+  font-family: 'Cormorant Garamond', serif;
+  font-style: italic;
+  font-size: 28px;
+  color: var(--accent);
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+.chart-container {
+  margin: 28px -8px 16px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 18px 8px 10px;
+}
+
+.chart-svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.profile-card {
+  background: var(--ink);
+  color: var(--paper);
+  padding: 30px 26px;
+  margin-top: 18px;
+}
+
+.profile-card h3 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 4px;
+  letter-spacing: -0.005em;
+}
+
+.profile-card .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: rgba(251, 246, 236, 0.55);
+  margin-bottom: 14px;
+}
+
+.profile-card p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 18px;
+  line-height: 1.55;
+  color: rgba(251, 246, 236, 0.92);
+  margin-bottom: 0;
+}
+
+.profile-card .traits {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+  color: rgba(251, 246, 236, 0.55);
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(251, 246, 236, 0.15);
+  line-height: 1.65;
+}
+
+.partner-section {
+  margin-top: 24px;
+  padding: 24px 22px;
+  background: var(--paper-warm);
+  border-left: 3px solid var(--accent);
+}
+
+.partner-section .label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 10px;
+}
+
+.partner-section h4 {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 24px;
+  font-weight: 600;
+  font-style: italic;
+  margin-bottom: 12px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+
+.partner-section p {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+}
+
+.breakdown {
+  margin-top: 22px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  padding: 20px 22px;
+}
+
+.breakdown h4 {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+}
+
+.breakdown-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px dotted var(--rule);
+}
+
+.breakdown-row:last-child { border-bottom: none; }
+
+.br-name {
+  font-family: 'Cormorant Garamond', serif;
+  font-size: 19px;
+  font-weight: 600;
+  flex: 0 0 120px;
+}
+
+.br-name em { font-style: italic; }
+
+.br-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--rule);
+  position: relative;
+}
+
+.br-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  background: var(--accent);
+  transition: width 0.6s ease;
+}
+
+.br-pct {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-soft);
+  min-width: 40px;
+  text-align: right;
+  letter-spacing: 0.05em;
+}
+
+.actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 26px;
+}
+
+.btn {
+  flex: 1;
+  padding: 16px 16px;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--bg);
+  cursor: pointer;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  transition: all 0.15s;
+}
+
+.btn:hover { background: var(--accent); border-color: var(--accent); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--ink);
+}
+
+.btn-secondary:hover { background: var(--ink); color: var(--bg); }
+
+.fade-in {
+  animation: fadeIn 0.35s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 480px) {
+  body { font-size: 17px; padding: 16px 14px 60px; }
+  .option-btn { padding: 14px 16px; font-size: 16px; }
+  .profile-card { padding: 24px 20px; }
+  .partner-section { padding: 22px 18px; }
+  .breakdown { padding: 18px 16px; }
+  .br-name { flex: 0 0 95px; font-size: 17px; }
+  .actions { flex-direction: column; }
+  .toggle-btn { font-size: 16px; padding: 13px 12px; }
+}
+</style>
+</head>
+<body>
+<div class="container" id="app"></div>
+
+<script>
+/* ============================================================
+   TYPES — with pop culture references in profiles
+   ============================================================ */
+const TYPES = {
+  women: {
+    waif: {
+      name: 'Waif',
+      pairKey: 'frog',
+      affect: 'Helplessness',
+      traits: 'Passive · permissive · self-depriving · fantasy-prone · fragile',
+      profile: "The Waif feels cursed. She refuses the gift, deflects the compliment, apologizes for taking up space, and somehow makes you feel terrible for noticing. Cinderella by the hearth. Fantine on her deathbed. Marilyn Monroe in her own retelling of her childhood. Her dominant feeling is helplessness, and her favorite fantasy is rescue. She chooses men who cannot save her, then suffers audibly that she has not been saved.",
+      partnerTitle: "The Frog-Prince",
+      partnerProfile: "She marries a man defined by what he cannot give. Depressed, addicted, drifting, or simply absent in the room. They live a shared fantasy that the other will fix everything. It does not work out."
+    },
+    hermit: {
+      name: 'Hermit',
+      pairKey: 'huntsman',
+      affect: 'Fear',
+      traits: 'Reclusive · possessive · jealous · suspicious · overcontrolling · cold',
+      profile: "The Hermit is afraid all the time. She believes the world is plotting against her and gathers evidence to confirm it. Norma Desmond in her sealed mansion. Mrs. Danvers in her museum to the dead. Sylvia Plath in her journals. The Hermit punishes by withdrawal: stony silence, locked doors, refusal to be reached. She does not forgive. She only forgets, eventually, that you exist.",
+      partnerTitle: "The Huntsman",
+      partnerProfile: "She marries the principled, hardworking, slightly absent man who keeps the household together by sheer force of duty. He works late. He does not contradict her. He tells the children there is nothing wrong with their mother, and he means it."
+    },
+    queen: {
+      name: 'Queen',
+      pairKey: 'king',
+      affect: 'Emptiness',
+      traits: 'Mirror-hungry · entitled · intrusive · extravagant · hysterical · vindictive',
+      profile: "The Queen is empty, and she fills the emptiness with attention. She must be looked at, admired, and obeyed. Joan Crawford writing her own legend. Mary Todd Lincoln in mourning regalia. Cersei Lannister. Lucille Bluth. She is extravagant in display and stingy in private. She demands loyalty and discards people who fail to provide enough of it. She is generous on her own terms and forgives nothing.",
+      partnerTitle: "The King",
+      partnerProfile: "She marries the man whose self-worth depends on being seen as important. Don Draper. Logan Roy. The husband with his awards on the study wall. They feed each other, mostly. The children are decoration."
+    },
+    witch: {
+      name: 'Witch',
+      pairKey: 'fisherman',
+      affect: 'Annihilating rage',
+      traits: 'Sadistic · domineering · denigrating · destructive · boundary-violating · vengeful',
+      profile: "The Witch is angry. Not in flashes; constantly, just under the surface. Livia Soprano with her serene smile and her quiet poisonings. Margaret White in Carrie. Joan Crawford with the wire hangers. She is sadistic in small ways and large. She destroys what is loved, withholds what is needed, and divides people into factions she controls. She targets the vulnerable. Her hostility is fear in a heavier coat.",
+      partnerTitle: "The Fisherman",
+      partnerProfile: "She marries the husband she can dominate. He mutters, he submits, and he sometimes joins her in punishing the children. He cannot see her clearly. He may have had a mother like her, or no mother at all."
+    }
+  },
+  men: {
+    frog: {
+      name: 'Frog-Prince',
+      pairKey: 'waif',
+      affect: 'Emotional constriction',
+      traits: 'Underdog · numbing · unreliable · depressive or violent · unfaithful',
+      profile: "The Frog-Prince is the underdog. He is depressed, or numbed, or drifting somewhere on his own private detour. Walter White in the bad early years, before the chemistry. Don Birnam in The Lost Weekend. Some Frog-Princes are loveable. Some are violent. Many are simply absent. He does not remember much of his childhood. He defends against being left by being unavailable first.",
+      partnerTitle: "The Waif",
+      partnerProfile: "He pairs with the woman who feels cursed and chooses men who confirm it. They share a fantasy that the other will save them. He does not change."
+    },
+    huntsman: {
+      name: 'Huntsman',
+      pairKey: 'hermit',
+      affect: 'Repressed emotion under duty',
+      traits: 'Good-hearted · loyal · principled · avoidant · protective of wife not children',
+      profile: "The Huntsman is the good man. Atticus Finch. Ned Stark. He is loyal, principled, hardworking, and slightly distant. He keeps the marriage going by avoiding anything that would force him to admit it should not be kept going. He works two jobs. He retreats to the workshop. He tells the children their mother is fine. He believes it, mostly.",
+      partnerTitle: "The Hermit",
+      partnerProfile: "He pairs with the frightened, jealous, withdrawing wife. He pities her, protects her, and fails to see how his quiet steadiness leaves the children alone with her fear."
+    },
+    king: {
+      name: 'King',
+      pairKey: 'queen',
+      affect: 'Fragile grandiosity',
+      traits: 'Entitled · attention-seeking · withdrawing · status-preoccupied · demanding',
+      profile: "The King must be seen as important. Don Draper. Logan Roy. Tony Stark before he learned anything. He is grandiose, demanding, and easily wounded. He complains to the manager. He embellishes the resume. When the family becomes inconvenient he retreats to his study. When the children create difficulty he is briefly disappointed and then gone again.",
+      partnerTitle: "The Queen",
+      partnerProfile: "He pairs with the woman who must be looked at, admired, and obeyed. They are mutual mirrors. The kingdom they construct is for two. The children are accessories who must perform on cue."
+    },
+    fisherman: {
+      name: 'Fisherman',
+      pairKey: 'witch',
+      affect: 'Will relinquished to wife',
+      traits: 'Submissive · low self-esteem · passive-aggressive · blind to pathology · cannot protect',
+      profile: "The Fisherman is the husband nobody quite explains. He mutters. He submits. He calls the police on his daughter when his wife loses it. He sees himself as a victim of his wife's temper, never as her partner in what she does. He may have had a sadistic mother himself, and learned that this is what marriage looks like. He cannot defend his children because he cannot see them as separate from her.",
+      partnerTitle: "The Witch",
+      partnerProfile: "He pairs with the angry, dominating wife. She rules. He obeys. The children are caught between them with no one to turn to."
+    }
+  }
+};
+
+const TYPE_ORDER = {
+  women: ['waif', 'hermit', 'queen', 'witch'],
+  men: ['frog', 'huntsman', 'king', 'fisherman']
+};
+
+/* ============================================================
+   PRONOUN RESOLUTION
+   ============================================================ */
+function resolvePronouns(text, mode) {
+  if (mode === 'self') {
+    return text
+      .replace(/\{I\}/g, 'I')
+      .replace(/\{me\}/g, 'me')
+      .replace(/\{my\}/g, 'my')
+      .replace(/\{My\}/g, 'My')
+      .replace(/\{myself\}/g, 'myself')
+      .replace(/\{am\}/g, 'am')
+      .replace(/\{was\}/g, 'was')
+      .replace(/\{youO\}/g, 'you')
+      .replace(/\{you\}/g, 'you')
+      .replace(/\{your\}/g, 'your')
+      .replace(/\{Your\}/g, 'Your')
+      .replace(/\{yourself\}/g, 'yourself');
+  } else {
+    return text
+      .replace(/\{I\}/g, 'They')
+      .replace(/\{me\}/g, 'them')
+      .replace(/\{my\}/g, 'their')
+      .replace(/\{My\}/g, 'Their')
+      .replace(/\{myself\}/g, 'themselves')
+      .replace(/\{am\}/g, 'are')
+      .replace(/\{was\}/g, 'were')
+      .replace(/\{youO\}/g, 'them')
+      .replace(/\{you\}/g, 'they')
+      .replace(/\{your\}/g, 'their')
+      .replace(/\{Your\}/g, 'Their')
+      .replace(/\{yourself\}/g, 'themselves');
+  }
+}
+
+/* ============================================================
+   QUESTIONS — WOMEN
+   ============================================================ */
+const Q_WOMEN = [
+  { q: "The emotion that runs underneath everything is:",
+    opts: [
+      { t: "Helplessness. {I} expect to be hurt and rarely fight it.", w: { waif: 3 } },
+      { t: "Fear. {I} {am} vigilant even when nothing is happening.", w: { hermit: 3 } },
+      { t: "Emptiness. Nothing fills it for long.", w: { queen: 3 } },
+      { t: "Rage that {I} keep mostly out of sight.", w: { witch: 3 } }
+    ]},
+  { q: "When criticized, the first response is to:",
+    opts: [
+      { t: "Cry, apologize, agree that {I} {am} terrible.", w: { waif: 3 } },
+      { t: "Withdraw into silence and refuse to acknowledge it.", w: { hermit: 3 } },
+      { t: "Reframe {myself} as the wronged party.", w: { queen: 3 } },
+      { t: "Discredit and attack the source.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} dominant fantasy life involves:",
+    opts: [
+      { t: "A Prince Charming who finally rescues {me}.", w: { waif: 3 } },
+      { t: "Being left alone with {my} one trusted person.", w: { hermit: 3 } },
+      { t: "Being recognized as exceptional.", w: { queen: 3 } },
+      { t: "Punishing the people who wronged {me}.", w: { witch: 3 } }
+    ]},
+  { q: "When someone gives {youO} a gift:",
+    opts: [
+      { t: "{I} refuse it, or cannot enjoy it. {I} do not deserve it.", w: { waif: 3 } },
+      { t: "{I} receive it suspiciously. What do they want.", w: { hermit: 3 } },
+      { t: "{I} evaluate whether it reflects what {I} deserve.", w: { queen: 3 } },
+      { t: "{I} note the leverage it gives {me} over them.", w: { witch: 3 } }
+    ]},
+  { q: "When {your} partner is late getting home:",
+    opts: [
+      { t: "{I} assume something terrible has happened to him.", w: { waif: 3 } },
+      { t: "{I} assume he is with another woman.", w: { hermit: 3 } },
+      { t: "{I} feel ignored and plan how to make him pay.", w: { queen: 3 } },
+      { t: "{I} prepare to make him regret it when he walks in.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} children's autonomy:",
+    opts: [
+      { t: "{I} cannot say no to them. {I} never could.", w: { waif: 3 } },
+      { t: "{I} cannot bear when they pull away from {me}.", w: { hermit: 3 } },
+      { t: "They should reflect {my} values and tastes.", w: { queen: 3 } },
+      { t: "Their resistance is betrayal.", w: { witch: 3 } }
+    ]},
+  { q: "The criticism most feared:",
+    opts: [
+      { t: "That {I} {am} a burden.", w: { waif: 3 } },
+      { t: "That {I} {am} being seen too clearly.", w: { hermit: 3 } },
+      { t: "That {I} {am} ordinary.", w: { queen: 3 } },
+      { t: "That {I} {am} not in control.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} relationship to money is:",
+    opts: [
+      { t: "Self-depriving. {I} refuse to spend on {myself}.", w: { waif: 3 } },
+      { t: "Hoarding. {I} guard what is {my} own.", w: { hermit: 3 } },
+      { t: "Extravagant on display, stingy in private.", w: { queen: 3 } },
+      { t: "An instrument of control.", w: { witch: 3 } }
+    ]},
+  { q: "Alone in the house, the feeling is:",
+    opts: [
+      { t: "Relief. Nothing is required of {me}.", w: { waif: 3 } },
+      { t: "Safety at last.", w: { hermit: 3 } },
+      { t: "Restlessness. Being unseen.", w: { queen: 3 } },
+      { t: "The sense of being watched.", w: { witch: 3 } }
+    ]},
+  { q: "How anger gets expressed:",
+    opts: [
+      { t: "Tears, withdrawal, self-punishment.", w: { waif: 3 } },
+      { t: "Stony silence for days.", w: { hermit: 3 } },
+      { t: "Dramatic and public. Hysterical when needed.", w: { queen: 3 } },
+      { t: "Targeted. Sustained. Vindictive.", w: { witch: 3 } }
+    ]},
+  { q: "When {your} child is praised by someone else:",
+    opts: [
+      { t: "{I} feel proud and slightly afraid for them.", w: { waif: 3 } },
+      { t: "{I} feel a flicker of something like jealousy.", w: { hermit: 3 } },
+      { t: "{I} take partial credit for who they are.", w: { queen: 3 } },
+      { t: "{I} undercut the praise later, privately.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} own body:",
+    opts: [
+      { t: "Depleted. Frequently ill. {I} {am} the patient.", w: { waif: 3 } },
+      { t: "Over-attentive. {I} track every symptom.", w: { hermit: 3 } },
+      { t: "Preoccupied. It must be admired.", w: { queen: 3 } },
+      { t: "It is a weapon or a wall.", w: { witch: 3 } }
+    ]},
+  { q: "When a friend pulls away:",
+    opts: [
+      { t: "{I} assume {I} deserved it.", w: { waif: 3 } },
+      { t: "{I} sever the connection completely.", w: { hermit: 3 } },
+      { t: "{I} burn the relationship down on the way out.", w: { queen: 3 } },
+      { t: "{I} make sure they understand they will regret it.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} inner experience summarized:",
+    opts: [
+      { t: "{I} have nothing to offer that anyone really wants.", w: { waif: 3 } },
+      { t: "{I} {am} being watched and judged at all times.", w: { hermit: 3 } },
+      { t: "{I} {am} owed something {I} have never received.", w: { queen: 3 } },
+      { t: "{I} will not be the one left vulnerable.", w: { witch: 3 } }
+    ]},
+  { q: "The fairy-tale figure most recognized:",
+    opts: [
+      { t: "Cinderella, sleeping in the ashes.", w: { waif: 3 } },
+      { t: "Snow White, hiding in the forest.", w: { hermit: 3 } },
+      { t: "The Queen consulting the mirror.", w: { queen: 3 } },
+      { t: "The witch in the kitchen, turning it into a trap.", w: { witch: 3 } }
+    ]},
+  { q: "When confronted with evidence of {your} own behavior:",
+    opts: [
+      { t: "{I} collapse into apology.", w: { waif: 3 } },
+      { t: "{I} refuse to discuss it. {I} have done nothing wrong.", w: { hermit: 3 } },
+      { t: "{I} tell a version that makes {me} the wronged party.", w: { queen: 3 } },
+      { t: "{I} attack the source of the evidence.", w: { witch: 3 } }
+    ]},
+  { q: "Tolerance for being told no:",
+    opts: [
+      { t: "Total. {I} expect to be denied.", w: { waif: 3 } },
+      { t: "Low. {I} retreat and cut people off.", w: { hermit: 3 } },
+      { t: "Nonexistent. {I} escalate until people change their minds.", w: { queen: 3 } },
+      { t: "Someone will pay for it eventually.", w: { witch: 3 } }
+    ]},
+  { q: "When {your} partner spends time with another woman:",
+    opts: [
+      { t: "{I} feel relieved he has friends.", w: { waif: 3 } },
+      { t: "{I} become paranoid, possessive, and silent.", w: { hermit: 3 } },
+      { t: "{I} demand the spotlight back.", w: { queen: 3 } },
+      { t: "{I} accuse, threaten, sabotage.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} social world is best described as:",
+    opts: [
+      { t: "Small. Populated by people {I} caretake.", w: { waif: 3 } },
+      { t: "Tiny. High walls. {I} prefer to be alone.", w: { hermit: 3 } },
+      { t: "Performative. Built around being seen.", w: { queen: 3 } },
+      { t: "Strategic. Divided into factions {I} control.", w: { witch: 3 } }
+    ]},
+  { q: "In a divorce or custody dispute, the impulse is:",
+    opts: [
+      { t: "Capitulate. {I} do not deserve to fight.", w: { waif: 3 } },
+      { t: "Withdraw, distrust everyone, document obsessively.", w: { hermit: 3 } },
+      { t: "Make sure the world knows what was done to {me}.", w: { queen: 3 } },
+      { t: "Destroy him by any means available.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} own mother was:",
+    opts: [
+      { t: "{I} took care of her.", w: { waif: 3 } },
+      { t: "{I} have never separated from her.", w: { hermit: 3 } },
+      { t: "She never gave {me} what {I} deserved.", w: { queen: 3 } },
+      { t: "She was cruel and {I} survived her.", w: { witch: 3 } }
+    ]},
+  { q: "When {you} cannot get what {you} want:",
+    opts: [
+      { t: "{I} resign. Conclude {I} never deserved it.", w: { waif: 3 } },
+      { t: "{I} brood and replay the slight for weeks.", w: { hermit: 3 } },
+      { t: "{I} burst into tears or rage, publicly if necessary.", w: { queen: 3 } },
+      { t: "{I} find another way, through anyone necessary.", w: { witch: 3 } }
+    ]},
+  { q: "The belief lived by:",
+    opts: [
+      { t: "Hope is dangerous. {I} cannot survive its dashing.", w: { waif: 3 } },
+      { t: "Solitude is the only safety.", w: { hermit: 3 } },
+      { t: "Admiration is the same as love.", w: { queen: 3 } },
+      { t: "Control is the same as safety.", w: { witch: 3 } }
+    ]},
+  { q: "{Your} relationship to telling the truth:",
+    opts: [
+      { t: "{I} confess everything, often unnecessarily.", w: { waif: 3 } },
+      { t: "{I} conceal. {I} withhold. What is hidden cannot be taken.", w: { hermit: 3 } },
+      { t: "{I} tell the version that flatters {me}.", w: { queen: 3 } },
+      { t: "{I} use truth and lies equally as weapons.", w: { witch: 3 } }
+    ]},
+  { q: "If someone close to {youO} crossed {youO} seriously:",
+    opts: [
+      { t: "{I} forgive immediately and blame {myself}.", w: { waif: 3 } },
+      { t: "{I} cut them off in silence and refuse to discuss it.", w: { hermit: 3 } },
+      { t: "{I} make sure others knew what was done to {me}.", w: { queen: 3 } },
+      { t: "{I} make sure they understood the cost.", w: { witch: 3 } }
+    ]}
+];
+
+/* ============================================================
+   QUESTIONS — MEN
+   ============================================================ */
+const Q_MEN = [
+  { q: "When {your} partner becomes distressed, the default move is to:",
+    opts: [
+      { t: "Withdraw, numb out, possibly drink.", w: { frog: 3 } },
+      { t: "Take her arm gently and leave the room.", w: { huntsman: 3 } },
+      { t: "Retreat into work or {my} study.", w: { king: 3 } },
+      { t: "Submit, mutter under {my} breath, do what she asks.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} own emotions:",
+    opts: [
+      { t: "Numbed. {I} do not access them.", w: { frog: 3 } },
+      { t: "Suppressed. They interfere with duty.", w: { huntsman: 3 } },
+      { t: "Performed. What is felt is what is shown.", w: { king: 3 } },
+      { t: "Hers. She has the emotions for both of us.", w: { fisherman: 3 } }
+    ]},
+  { q: "What is most taken pride in:",
+    opts: [
+      { t: "That {I} {am} still here at all.", w: { frog: 3 } },
+      { t: "That {I} have never broken {my} word.", w: { huntsman: 3 } },
+      { t: "{My} accomplishments and standing.", w: { king: 3 } },
+      { t: "That {I} have kept the peace at home.", w: { fisherman: 3 } }
+    ]},
+  { q: "When {your} child says their mother has hurt them:",
+    opts: [
+      { t: "{I} cannot hear it. {I} do not have the bandwidth.", w: { frog: 3 } },
+      { t: "{I} tell them there is nothing wrong with their mother.", w: { huntsman: 3 } },
+      { t: "{I} withdraw. The conflict is not {my} concern.", w: { king: 3 } },
+      { t: "{I} tell them they provoked her.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} defensive style is best described as:",
+    opts: [
+      { t: "Substances, fantasy, or both.", w: { frog: 3 } },
+      { t: "Denial and avoidance, conscientiously held.", w: { huntsman: 3 } },
+      { t: "Grandiosity and contempt.", w: { king: 3 } },
+      { t: "Submission and passive-aggression.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to fidelity:",
+    opts: [
+      { t: "{I} drift. Sometimes {I} disappear into someone else.", w: { frog: 3 } },
+      { t: "Total. It is part of who {I} {am}.", w: { huntsman: 3 } },
+      { t: "{I} expect hers without exception. {My} own is conditional.", w: { king: 3 } },
+      { t: "Hers. She decides what counts.", w: { fisherman: 3 } }
+    ]},
+  { q: "When others praise {your} wife:",
+    opts: [
+      { t: "{I} feel proud and slightly absent.", w: { frog: 3 } },
+      { t: "{I} {am} genuinely grateful for her.", w: { huntsman: 3 } },
+      { t: "{I} feel competitive.", w: { king: 3 } },
+      { t: "{I} feel safer for a moment.", w: { fisherman: 3 } }
+    ]},
+  { q: "The childhood pattern most repeated:",
+    opts: [
+      { t: "Numbing painful feelings with whatever was available.", w: { frog: 3 } },
+      { t: "Carrying a burden in silence to keep the peace.", w: { huntsman: 3 } },
+      { t: "Performing for approval to feel real.", w: { king: 3 } },
+      { t: "Submitting to a frightening woman.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to work:",
+    opts: [
+      { t: "Inconsistent. Sometimes escapist.", w: { frog: 3 } },
+      { t: "Two jobs. Long hours. No complaints.", w: { huntsman: 3 } },
+      { t: "Status-conferring. Hours-obsessed. Performative.", w: { king: 3 } },
+      { t: "Whatever she wants {me} to be doing.", w: { fisherman: 3 } }
+    ]},
+  { q: "When the family is in serious conflict:",
+    opts: [
+      { t: "{I} disappear into a private world.", w: { frog: 3 } },
+      { t: "{I} become more committed to preserving the marriage.", w: { huntsman: 3 } },
+      { t: "{I} express disappointment in everyone and withdraw.", w: { king: 3 } },
+      { t: "{I} take her side. Every time.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} children's view of their mother:",
+    opts: [
+      { t: "{I} do not engage with it.", w: { frog: 3 } },
+      { t: "{I} correct them. She is not as bad as they say.", w: { huntsman: 3 } },
+      { t: "{I} {am} too removed to know what they perceive.", w: { king: 3 } },
+      { t: "{I} reinforce her view of which child is good and which is not.", w: { fisherman: 3 } }
+    ]},
+  { q: "The thing most wanted to be said:",
+    opts: [
+      { t: "He has been through a lot.", w: { frog: 3 } },
+      { t: "He is decent to the bone.", w: { huntsman: 3 } },
+      { t: "He runs a major operation.", w: { king: 3 } },
+      { t: "He is the rock she leans on.", w: { fisherman: 3 } }
+    ]},
+  { q: "What is most feared in {your} wife:",
+    opts: [
+      { t: "Her despair. It pulls {me} down.", w: { frog: 3 } },
+      { t: "Her irrational behavior, which {I} refuse to name.", w: { huntsman: 3 } },
+      { t: "Her criticism.", w: { king: 3 } },
+      { t: "Her rage.", w: { fisherman: 3 } }
+    ]},
+  { q: "Emotional unavailability shows up as:",
+    opts: [
+      { t: "Being physically absent or checked out.", w: { frog: 3 } },
+      { t: "Working late, volunteering, anywhere but home.", w: { huntsman: 3 } },
+      { t: "Being preoccupied with {myself}.", w: { king: 3 } },
+      { t: "Being absorbed by her needs above all others.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} childhood {was} marked by:",
+    opts: [
+      { t: "Being left alone with {my} own pain. No one came.", w: { frog: 3 } },
+      { t: "Being rescued, late, by someone kind.", w: { huntsman: 3 } },
+      { t: "Being the golden child or the embarrassment, sometimes both.", w: { king: 3 } },
+      { t: "A sadistic or absent mother. No model of being protected.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to anger:",
+    opts: [
+      { t: "{I} numb it before it reaches {me}.", w: { frog: 3 } },
+      { t: "{I} do not feel it. {I} {am} not allowed to.", w: { huntsman: 3 } },
+      { t: "{I} express it as wounded dignity.", w: { king: 3 } },
+      { t: "{I} mutter it.", w: { fisherman: 3 } }
+    ]},
+  { q: "Tolerance for being controlled by {your} partner:",
+    opts: [
+      { t: "High. Control feels like care.", w: { frog: 3 } },
+      { t: "High. {I} have learned not to resist.", w: { huntsman: 3 } },
+      { t: "Low. {I} withdraw rather than comply.", w: { king: 3 } },
+      { t: "Total. {I} have no other model.", w: { fisherman: 3 } }
+    ]},
+  { q: "The private space {you} go when home gets bad:",
+    opts: [
+      { t: "Anywhere {I} can disappear.", w: { frog: 3 } },
+      { t: "A detached garage or workshop. {I} work late.", w: { huntsman: 3 } },
+      { t: "A study lined with {my} awards.", w: { king: 3 } },
+      { t: "Wherever she allows {me}.", w: { fisherman: 3 } }
+    ]},
+  { q: "When the marriage is criticized by someone outside it:",
+    opts: [
+      { t: "{I} shrug. Marriages are hard.", w: { frog: 3 } },
+      { t: "{I} defend it on principle.", w: { huntsman: 3 } },
+      { t: "{I} refuse to discuss it.", w: { king: 3 } },
+      { t: "{I} cannot imagine living outside it.", w: { fisherman: 3 } }
+    ]},
+  { q: "The fairy-tale role most recognized:",
+    opts: [
+      { t: "The Frog who never quite changes back.", w: { frog: 3 } },
+      { t: "The Huntsman who spares Snow White and tells no one.", w: { huntsman: 3 } },
+      { t: "The King ruling from a distance.", w: { king: 3 } },
+      { t: "The Fisherman pulled out night after night against his will.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} wife's troubles:",
+    opts: [
+      { t: "{I} would rather not know.", w: { frog: 3 } },
+      { t: "She is not well, but she is {my} wife.", w: { huntsman: 3 } },
+      { t: "It does not interest {me} unless it embarrasses {me}.", w: { king: 3 } },
+      { t: "{I} cannot see it. It is just how things are.", w: { fisherman: 3 } }
+    ]},
+  { q: "When {your} child accomplishes something:",
+    opts: [
+      { t: "{I} {am} pleased and vague.", w: { frog: 3 } },
+      { t: "{I} {am} quietly proud and say little.", w: { huntsman: 3 } },
+      { t: "{I} take credit.", w: { king: 3 } },
+      { t: "{I} worry it will make their mother jealous.", w: { fisherman: 3 } }
+    ]},
+  { q: "The honest reason {I} have not left:",
+    opts: [
+      { t: "Inertia. Depression. Where would {I} go.", w: { frog: 3 } },
+      { t: "It is against {my} principles.", w: { huntsman: 3 } },
+      { t: "{I} would lose too much standing.", w: { king: 3 } },
+      { t: "{I} cannot conceive of living without her.", w: { fisherman: 3 } }
+    ]},
+  { q: "{Your} relationship to {your} own father was:",
+    opts: [
+      { t: "Absent, addicted, or violent.", w: { frog: 3 } },
+      { t: "A hard-working man {I} never quite reached.", w: { huntsman: 3 } },
+      { t: "A man who demanded admiration.", w: { king: 3 } },
+      { t: "Absent or weak. She replaced him.", w: { fisherman: 3 } }
+    ]},
+  { q: "If {your} wife harmed {your} child and {you} were the only adult present:",
+    opts: [
+      { t: "{I} would not let {myself} fully register it.", w: { frog: 3 } },
+      { t: "{I} would minimize it to preserve the marriage.", w: { huntsman: 3 } },
+      { t: "{I} would resent the child for creating the disturbance.", w: { king: 3 } },
+      { t: "{I} would side with her. {I} might call the police on the child.", w: { fisherman: 3 } }
+    ]}
+];
+
+/* ============================================================
+   STATE
+   ============================================================ */
+const state = {
+  view: 'home',
+  mode: 'self',        // 'self' or 'proxy'
+  quiz: null,
+  qIndex: 0,
+  answers: []
+};
+
+const $app = document.getElementById('app');
+
+function render() {
+  $app.innerHTML = '';
+  $app.classList.remove('fade-in');
+  void $app.offsetWidth;
+  $app.classList.add('fade-in');
+
+  if (state.view === 'home') return renderHome();
+  if (state.view === 'quiz') return renderQuiz();
+  if (state.view === 'results') return renderResults();
+}
+
+/* ---------- HOME ---------- */
+function renderHome() {
+  $app.innerHTML = `
+    <div class="masthead">
+      <span>A Field Guide</span>
+      <span class="center">Four mothers, four fathers</span>
+      <span>v2.0</span>
+    </div>
+    <div class="kicker">After Lawson</div>
+    <h1>Four kinds of <em>difficult</em> mother.<br>Four kinds of <em>husband</em> who marry them.</h1>
+
+    <p class="deck">There is the cold mother who treats every visit as a court appearance. The fragile mother whose every illness is also a request. The mother who lives behind locked doors. The mother who weaponizes everything she touches.</p>
+
+    <p class="lede">They are not the same person. The men who marry them are not the same either. Each kind of mother pulls a particular kind of man into orbit. The pairings are not coincidence.</p>
+
+    <p class="lede">This is an instrument for naming the pattern, in oneself or in someone close.</p>
+
+    <div class="attribution">
+      Adapted from Christine Ann Lawson, Ph.D.,<br>
+      <em>Understanding the Borderline Mother</em> (2000),<br>
+      which sorts these patterns into four figures from fairy tales.<br>
+      Not a diagnostic instrument.
+    </div>
+
+    <div class="section-label">Who is this about?</div>
+    <div class="toggle-group">
+      <button class="toggle-btn ${state.mode === 'self' ? 'active' : ''}" onclick="setMode('self')">Me</button>
+      <button class="toggle-btn ${state.mode === 'proxy' ? 'active' : ''}" onclick="setMode('proxy')">Someone in my life</button>
+    </div>
+    <p class="toggle-hint">${state.mode === 'self'
+      ? 'You will answer in the first person, about yourself.'
+      : 'You will answer about someone else, based on what you have observed.'}</p>
+
+    <div class="section-label">Choose an instrument</div>
+    <div class="choice-grid">
+      <button class="choice-card" onclick="startQuiz('women')">
+        <span class="choice-num">I.</span>
+        <div class="choice-content">
+          <h3>The four <em>mothers</em></h3>
+          <div class="choice-meta">Waif &middot; Hermit &middot; Queen &middot; Witch</div>
+        </div>
+      </button>
+      <button class="choice-card" onclick="startQuiz('men')">
+        <span class="choice-num">II.</span>
+        <div class="choice-content">
+          <h3>The four <em>fathers</em></h3>
+          <div class="choice-meta">Frog-Prince &middot; Huntsman &middot; King &middot; Fisherman</div>
+        </div>
+      </button>
+    </div>
+
+    <p class="footnote">For naming what you already half-know.</p>
+  `;
+}
+
+window.setMode = function(mode) {
+  state.mode = mode;
+  render();
+};
+
+window.startQuiz = function(which) {
+  state.view = 'quiz';
+  state.quiz = which;
+  state.qIndex = 0;
+  state.answers = [];
+  render();
+};
+
+/* ---------- QUIZ ---------- */
+function getQuestions() {
+  return state.quiz === 'women' ? Q_WOMEN : Q_MEN;
+}
+
+function renderQuiz() {
+  const questions = getQuestions();
+  const total = questions.length;
+  const i = state.qIndex;
+  const q = questions[i];
+  const pct = (i / total) * 100;
+  const letters = ['A', 'B', 'C', 'D'];
+  const instrumentName = state.quiz === 'women' ? 'The Four Mothers' : 'The Four Fathers';
+  const modeTag = state.mode === 'self' ? 'About me' : 'About someone in my life';
+
+  $app.innerHTML = `
+    <div class="masthead">
+      <span>${instrumentName}</span>
+      <span class="center">${modeTag}</span>
+      <span>${String(i+1).padStart(2,'0')} / ${total}</span>
+    </div>
+    <div class="progress-row">
+      <span>Item ${String(i+1).padStart(2,'0')}</span>
+      <span class="right">${i+1} of ${total}</span>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>
+
+    <div class="q-number">Q.${String(i+1).padStart(2,'0')}</div>
+    <h2 class="question-text">${resolvePronouns(q.q, state.mode)}</h2>
+    <div class="options-list">
+      ${q.opts.map((o, idx) => `
+        <button class="option-btn" onclick="answer(${idx})">
+          <span class="option-letter">${letters[idx]}.</span>
+          <span>${resolvePronouns(o.t, state.mode)}</span>
+        </button>
+      `).join('')}
+    </div>
+    <button class="back-link" onclick="goBack()">${i === 0 ? '\u2190 Back to menu' : '\u2190 Previous item'}</button>
+  `;
+}
+
+window.answer = function(optIdx) {
+  const q = getQuestions()[state.qIndex];
+  state.answers[state.qIndex] = q.opts[optIdx].w;
+  state.qIndex++;
+  if (state.qIndex >= getQuestions().length) {
+    state.view = 'results';
+  }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  render();
+};
+
+window.goBack = function() {
+  if (state.qIndex === 0) {
+    state.view = 'home';
+    state.quiz = null;
+    state.answers = [];
+  } else {
+    state.qIndex--;
+    state.answers.pop();
+  }
+  render();
+};
+
+/* ---------- SCORING ---------- */
+function computeScores() {
+  const keys = TYPE_ORDER[state.quiz];
+  const questions = getQuestions();
+
+  const earned = {};
+  keys.forEach(k => earned[k] = 0);
+  state.answers.forEach(w => {
+    Object.keys(w).forEach(k => { earned[k] = (earned[k] || 0) + w[k]; });
+  });
+
+  const maxPossible = {};
+  keys.forEach(k => maxPossible[k] = 0);
+  questions.forEach(q => {
+    keys.forEach(k => {
+      let best = 0;
+      q.opts.forEach(o => {
+        const v = o.w[k] || 0;
+        if (v > best) best = v;
+      });
+      maxPossible[k] += best;
+    });
+  });
+
+  const pct = {};
+  keys.forEach(k => {
+    const max = maxPossible[k] || 1;
+    pct[k] = Math.round((earned[k] / max) * 100);
+  });
+  return pct;
+}
+
+/* ---------- CHART (4-axis radar) ---------- */
+function renderChart(scores) {
+  const keys = TYPE_ORDER[state.quiz];
+  const types = TYPES[state.quiz];
+  const n = keys.length;
+  const W = 520, H = 500;
+  const cx = W / 2;
+  const cy = H / 2;
+  const R = 150;
+
+  let svg = `<svg viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" class="chart-svg">`;
+
+  // Concentric grid
+  for (let lvl = 1; lvl <= 4; lvl++) {
+    const r = R * lvl / 4;
+    const pts = keys.map((_, i) => {
+      const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+      return `${(cx + Math.cos(a) * r).toFixed(2)},${(cy + Math.sin(a) * r).toFixed(2)}`;
+    }).join(' ');
+    svg += `<polygon points="${pts}" fill="none" stroke="#c8bda9" stroke-width="${lvl === 4 ? 1.2 : 0.6}" stroke-dasharray="${lvl < 4 ? '2,3' : 'none'}"/>`;
+  }
+
+  // Radial axes
+  keys.forEach((_, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const x = cx + Math.cos(a) * R;
+    const y = cy + Math.sin(a) * R;
+    svg += `<line x1="${cx}" y1="${cy}" x2="${x.toFixed(2)}" y2="${y.toFixed(2)}" stroke="#c8bda9" stroke-width="0.6"/>`;
+  });
+
+  // Tick labels along top axis
+  for (let lvl = 1; lvl <= 3; lvl++) {
+    const r = R * lvl / 4;
+    svg += `<text x="${cx + 4}" y="${(cy - r + 3).toFixed(2)}" font-family="IBM Plex Mono, monospace" font-size="9" fill="#8a7e72">${lvl * 25}</text>`;
+  }
+
+  // Score polygon
+  const scorePts = keys.map((k, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const r = R * Math.min(1, scores[k] / 100);
+    return `${(cx + Math.cos(a) * r).toFixed(2)},${(cy + Math.sin(a) * r).toFixed(2)}`;
+  }).join(' ');
+  svg += `<polygon points="${scorePts}" fill="rgba(122, 40, 24, 0.18)" stroke="#7a2818" stroke-width="2" stroke-linejoin="round"/>`;
+
+  // Vertex dots
+  keys.forEach((k, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const r = R * Math.min(1, scores[k] / 100);
+    const x = cx + Math.cos(a) * r;
+    const y = cy + Math.sin(a) * r;
+    svg += `<circle cx="${x.toFixed(2)}" cy="${y.toFixed(2)}" r="4" fill="#7a2818" stroke="#fbf6ec" stroke-width="2"/>`;
+  });
+
+  // Percentage labels inside near each vertex
+  keys.forEach((k, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const lr = R * 0.6;
+    const lx = cx + Math.cos(a) * lr;
+    const ly = cy + Math.sin(a) * lr;
+    svg += `<text x="${lx.toFixed(2)}" y="${(ly+5).toFixed(2)}" text-anchor="middle" font-family="IBM Plex Mono, monospace" font-size="14" font-weight="500" fill="#1d1a16">${scores[k]}%</text>`;
+  });
+
+  // Type name labels outside vertices (no pair labels — pair is the quiet reveal below)
+  keys.forEach((k, i) => {
+    const a = (i / n) * Math.PI * 2 - Math.PI / 2;
+    const lr = R + 32;
+    const lx = cx + Math.cos(a) * lr;
+    const ly = cy + Math.sin(a) * lr;
+    const dy = Math.sin(a) > 0.3 ? 14 : (Math.sin(a) < -0.3 ? -4 : 5);
+    svg += `<text x="${lx.toFixed(2)}" y="${(ly+dy).toFixed(2)}" text-anchor="middle" font-family="Cormorant Garamond, serif" font-size="22" font-weight="600" fill="#1d1a16">${types[k].name}</text>`;
+  });
+
+  svg += '</svg>';
+  return svg;
+}
+
+/* ---------- RESULTS ---------- */
+function renderResults() {
+  const scores = computeScores();
+  const keys = TYPE_ORDER[state.quiz];
+  const types = TYPES[state.quiz];
+
+  const ranked = keys.slice().sort((a, b) => scores[b] - scores[a]);
+  const winnerKey = ranked[0];
+  const winner = types[winnerKey];
+  const winnerPct = scores[winnerKey];
+  const maxScore = Math.max(...Object.values(scores), 1);
+
+  const instrumentName = state.quiz === 'women' ? 'The Four Mothers' : 'The Four Fathers';
+  const kicker = state.mode === 'self' ? 'You are closest to' : 'What you describe is closest to';
+
+  $app.innerHTML = `
+    <div class="masthead">
+      <span>Results</span>
+      <span class="center">${instrumentName}</span>
+      <span>${state.mode === 'self' ? 'About me' : 'About someone'}</span>
+    </div>
+
+    <div class="results-headline">
+      <div class="results-kicker">${kicker}</div>
+      <h1 class="results-title">The ${formatName(winner.name)}</h1>
+      <div class="results-pct">Match score <span class="big">${winnerPct}%</span></div>
+    </div>
+
+    <div class="chart-container">
+      ${renderChart(scores)}
+    </div>
+
+    <div class="profile-card">
+      <div class="label">Profile</div>
+      <h3>The ${winner.name}</h3>
+      <p>${winner.profile}</p>
+      <div class="traits">
+        DOMINANT AFFECT &middot; ${winner.affect.toUpperCase()}<br>
+        TRAITS &middot; ${winner.traits.toUpperCase()}
+      </div>
+    </div>
+
+    <div class="partner-section">
+      <div class="label">The corresponding figure</div>
+      <h4>${formatName(winner.partnerTitle)}</h4>
+      <p>${winner.partnerProfile}</p>
+    </div>
+
+    <div class="breakdown">
+      <h4>Full distribution</h4>
+      ${ranked.map(k => `
+        <div class="breakdown-row">
+          <span class="br-name">${formatName(types[k].name)}</span>
+          <div class="br-bar"><div class="br-fill" style="width:${(scores[k] / maxScore * 100).toFixed(1)}%"></div></div>
+          <span class="br-pct">${scores[k]}%</span>
+        </div>
+      `).join('')}
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="retakeQuiz()">Retake</button>
+      <button class="btn" onclick="goHome()">Other instrument</button>
+    </div>
+  `;
+}
+
+function formatName(name) {
+  if (name.includes('-')) {
+    const parts = name.split('-');
+    return `${parts[0]}-<em>${parts[1]}</em>`;
+  }
+  return name;
+}
+
+window.retakeQuiz = function() {
+  state.qIndex = 0;
+  state.answers = [];
+  state.view = 'quiz';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  render();
+};
+
+window.goHome = function() {
+  state.view = 'home';
+  state.quiz = null;
+  state.qIndex = 0;
+  state.answers = [];
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  render();
+};
+
+render();
+</script>
+</body>
+</html>
