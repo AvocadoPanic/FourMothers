@@ -578,6 +578,40 @@ button:focus-visible {
   margin-left: 6px;
 }
 
+.share-toast {
+  position: fixed;
+  bottom: 28px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: var(--paper);
+  padding: 12px 22px;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  z-index: 1000;
+  animation: toastFade 2.2s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes toastFade {
+  0% { opacity: 0; transform: translate(-50%, 8px); }
+  12%, 78% { opacity: 1; transform: translate(-50%, 0); }
+  100% { opacity: 0; transform: translate(-50%, -4px); }
+}
+
+.share-fallback {
+  margin-top: 12px;
+  padding: 12px;
+  background: var(--paper);
+  border: 1px solid var(--rule);
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 11px;
+  word-break: break-all;
+  user-select: all;
+}
+
 @media (max-width: 580px) {
   .rate-row { flex-direction: column; align-items: stretch; }
   .rate-chips { width: 100%; justify-content: space-between; }
@@ -929,7 +963,7 @@ const TYPE_ORDER = {
   men: Object.keys(TYPES.men)
 };
 
-const VERSION = 'v2.6';
+const VERSION = 'v2.7';
 
 /* ============================================================
    PRONOUN RESOLUTION
@@ -1139,7 +1173,7 @@ const Q_WOMEN = [
     ]},
   { q: "{Your} working life has tended to be:",
     opts: [
-      { t: "Underemployed. {I} work hard for people who exploit {me}.", w: { waif: 3 } },
+      { t: "Underpaid. Overlooked. {I} have never asked for what {I} {am} worth.", w: { waif: 3 } },
       { t: "Excellent in private. {I} refuse to submit, publish, or be seen.", w: { hermit: 3 } },
       { t: "Inseparable from {my} standing. {I} need the title to feel real.", w: { queen: 3 } },
       { t: "Functional. The people at work have not seen what comes out at home.", w: { witch: 3 } }
@@ -1470,11 +1504,25 @@ const Q_MEN = [
 /* ============================================================
    STATE
    ============================================================ */
-const SCORING_MODE = (() => {
-  try {
-    return new URLSearchParams(window.location.search).get('mode') === 'rate' ? 'rate' : 'forced';
-  } catch (e) { return 'forced'; }
+const URL_PARAMS = (() => {
+  try { return new URLSearchParams(window.location.search); }
+  catch (e) { return new URLSearchParams(''); }
 })();
+
+const SCORING_MODE = URL_PARAMS.get('mode') === 'rate' ? 'rate' : 'forced';
+
+function decodeShare(b64) {
+  if (!b64) return null;
+  try {
+    const std = b64.replace(/-/g, '+').replace(/_/g, '/');
+    const padded = std + '='.repeat((4 - (std.length % 4)) % 4);
+    const data = JSON.parse(atob(padded));
+    if (!data.q || !data.s) return null;
+    return data;
+  } catch (e) { return null; }
+}
+
+const SHARED_RESULTS = decodeShare(URL_PARAMS.get('share'));
 
 const state = {
   view: 'home',
@@ -1483,8 +1531,16 @@ const state = {
   quiz: null,
   qIndex: 0,
   answers: [],          // forced: { optIdx, weights, confidence }; rate: { ratings: { type: 0-3 } }; either: { neutral: true }
-  pending: null         // forced: { optIdx, confidence } | { optIdx: 4, neutral: true }; rate: { ratings: { type: 0-3 } }
+  pending: null,        // forced: { optIdx, confidence } | { optIdx: 4, neutral: true }; rate: { ratings: { type: 0-3 } }
+  sharedResults: SHARED_RESULTS  // when set, results view renders this encoded payload instead of state.answers
 };
+
+if (SHARED_RESULTS) {
+  state.quiz = SHARED_RESULTS.q;
+  state.mode = SHARED_RESULTS.m || 'self';
+  state.scoringMode = SHARED_RESULTS.sm || 'forced';
+  state.view = 'results';
+}
 
 const CONFIDENCE_LABELS = { 1: 'Loosely', 2: 'Mostly', 3: 'Exactly' };
 const NEUTRAL_OPTION_TEXT = "None of these describes {me}.";
@@ -1946,12 +2002,18 @@ function renderChart(scores) {
 
 /* ---------- RESULTS ---------- */
 function renderResults() {
-  const scores = computeScores();
+  const isShared = !!state.sharedResults;
+  const scores = isShared ? state.sharedResults.s : computeScores();
   const keys = TYPE_ORDER[state.quiz];
   const types = TYPES[state.quiz];
-  const totalAnswered = state.answers.length;
-  const neutralCount = countNeutrals();
-  const resultMode = classifyResult(neutralCount, totalAnswered);
+  const totalAnswered = isShared ? (state.sharedResults.t || 0) : state.answers.length;
+  const neutralCount = isShared ? (state.sharedResults.n || 0) : countNeutrals();
+  const intensityVal = isShared
+    ? (state.sharedResults.i || 0)
+    : (state.scoringMode === 'rate' ? rateIntensity() : 0);
+  const resultMode = isShared
+    ? state.sharedResults.rm
+    : classifyResult(neutralCount, totalAnswered);
 
   const ranked = keys.slice().sort((a, b) => scores[b] - scores[a]);
   const winnerKey = ranked[0];
@@ -1963,7 +2025,7 @@ function renderResults() {
 
   const isRate = state.scoringMode === 'rate';
   const noMatchSub = isRate
-    ? `Average rating across all options was ${rateIntensity().toFixed(2)} of 3`
+    ? `Average rating across all options was ${intensityVal.toFixed(2)} of 3`
     : `${neutralCount} of ${totalAnswered} items did not align with any pattern`;
   const matchSub = isRate
     ? 'Match share <span class="big">' + winnerPct + '%</span> &middot; of all rating points'
@@ -1976,15 +2038,20 @@ function renderResults() {
         : "What {I} describe does not fit these patterns";
       return `
         <div class="results-headline no-match">
-          <div class="results-kicker">No strong match</div>
-          <h1 class="results-title">${resolvePronouns(title, state.mode)}</h1>
+          <div class="results-kicker">${isShared ? 'Shared result · no strong match' : 'No strong match'}</div>
+          <h1 class="results-title">${resolvePronouns(title, isShared ? 'proxy' : state.mode)}</h1>
           <div class="results-pct">${noMatchSub}</div>
         </div>
       `;
     }
-    const kicker = resultMode === 'tentative'
-      ? (state.mode === 'self' ? 'Tentatively closest to' : 'What you describe is tentatively closest to')
-      : (state.mode === 'self' ? 'You are closest to' : 'What you describe is closest to');
+    let kicker;
+    if (isShared) {
+      kicker = resultMode === 'tentative' ? 'Shared result · tentatively closest to' : 'Shared result · closest to';
+    } else if (resultMode === 'tentative') {
+      kicker = state.mode === 'self' ? 'Tentatively closest to' : 'What you describe is tentatively closest to';
+    } else {
+      kicker = state.mode === 'self' ? 'You are closest to' : 'What you describe is closest to';
+    }
     return `
       <div class="results-headline">
         <div class="results-kicker">${kicker}</div>
@@ -2016,6 +2083,19 @@ function renderResults() {
     <p class="neutral-note">${neutralCount} of ${totalAnswered} items did not align with any of the four patterns.</p>
   ` : '';
 
+  const actions = isShared ? `
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="takeYourself()">Take it yourself</button>
+      <button class="btn" onclick="goHome()">Other instrument</button>
+    </div>
+  ` : `
+    <div class="actions">
+      <button class="btn btn-secondary" onclick="retakeQuiz()">Retake</button>
+      <button class="btn btn-secondary" onclick="shareResults()">Share</button>
+      <button class="btn" onclick="goHome()">Other instrument</button>
+    </div>
+  `;
+
   $app.innerHTML = `
     <div class="masthead">
       <span>Results</span>
@@ -2044,12 +2124,80 @@ function renderResults() {
       `).join('')}
     </div>
 
-    <div class="actions">
-      <button class="btn btn-secondary" onclick="retakeQuiz()">Retake</button>
-      <button class="btn" onclick="goHome()">Other instrument</button>
-    </div>
+    ${actions}
   `;
 }
+
+function encodeShareUrl() {
+  const scores = computeScores();
+  const data = {
+    q: state.quiz,
+    m: state.mode,
+    sm: state.scoringMode,
+    s: scores,
+    rm: classifyResult(countNeutrals(), state.answers.length)
+  };
+  if (state.scoringMode === 'rate') {
+    data.i = +rateIntensity().toFixed(2);
+  } else {
+    data.n = countNeutrals();
+    data.t = state.answers.length;
+  }
+  const json = JSON.stringify(data);
+  const b64 = btoa(json).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  const base = window.location.origin + window.location.pathname;
+  return `${base}?share=${b64}`;
+}
+
+function showToast(message) {
+  const existing = document.querySelector('.share-toast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'share-toast';
+  el.textContent = message;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 2400);
+}
+
+window.shareResults = async function() {
+  const url = encodeShareUrl();
+  const types = TYPES[state.quiz];
+  const keys = TYPE_ORDER[state.quiz];
+  const scores = computeScores();
+  const winnerKey = keys.slice().sort((a, b) => scores[b] - scores[a])[0];
+  const winnerName = types[winnerKey].name;
+  const shareData = {
+    title: 'Four Mothers, Four Fathers',
+    text: `Closest to The ${winnerName} (${scores[winnerKey]}%)`,
+    url
+  };
+  if (navigator.share) {
+    try { await navigator.share(shareData); return; }
+    catch (e) { if (e && e.name === 'AbortError') return; }
+  }
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try { await navigator.clipboard.writeText(url); showToast('Link copied'); return; }
+    catch (e) { /* fall through */ }
+  }
+  // Last-resort fallback: render the URL into the page for manual copy
+  const el = document.createElement('div');
+  el.className = 'share-fallback';
+  el.textContent = url;
+  document.querySelector('.actions').after(el);
+  showToast('Copy the link below');
+};
+
+window.takeYourself = function() {
+  state.sharedResults = null;
+  state.view = 'home';
+  state.quiz = null;
+  state.qIndex = 0;
+  state.answers = [];
+  state.pending = null;
+  try { history.replaceState(null, '', window.location.pathname); } catch (e) {}
+  render();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+};
 
 function formatName(name) {
   if (name.includes('-')) {
